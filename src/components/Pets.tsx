@@ -63,12 +63,7 @@ export function PetCard({ p, onMeet }: { p: Pet; onMeet: (p: Pet) => void }) {
       <span className={s.cardHead}>
         <span className={s.name}>{p.name}</span>
         <span className={s.meta}>
-          {p.age}
-          {/* на ДВ пол словом, на МВ — значком, чтобы возраст помещался в строку с именем */}
-          <span className={s.sexWord}> · {p.sex}</span>
-          <span className={s.sexIcon} aria-label={p.sex}>
-            {p.sex === "девочка" ? "♀" : "♂"}
-          </span>
+          {p.age} · {p.sex}
         </span>
       </span>
       <span className={s.line}>{p.line}</span>
