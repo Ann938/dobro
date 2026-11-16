@@ -67,7 +67,7 @@ $m-content: 358;
 
 // ---- Кнопки ----
 // На МВ шрифт кнопок не меньше 14 px: u() на узких экранах уменьшает кегль, поэтому max(14px, …).
-// Главная — тёмная заливка. Ховер: кнопка чуть темнеет, из-за верхнего края выглядывает лапка-логотип.
+// Главная — тёмная заливка. Ховер: кнопка чуть темнеет, из-за кнопки сверху выглядывает лапка-логотип.
 // ---- Лапка-логотип за кнопкой (варианты В–Е на /lab) ----
 $paw-logo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23f0612e'%3E%3Cpath d='M16 29.2c-4.8 0-8.6-2.5-8.6-6.2 0-3 2.6-4.7 4.6-6.5 1.4-1.2 2.3-2.8 4-2.8s2.6 1.6 4 2.8c2 1.8 4.6 3.5 4.6 6.5 0 3.7-3.8 6.2-8.6 6.2z'/%3E%3Cellipse cx='6.4' cy='13.6' rx='2.7' ry='3.4' transform='rotate(-22 6.4 13.6)'/%3E%3Cellipse cx='11.6' cy='7.4' rx='2.8' ry='3.6' transform='rotate(-8 11.6 7.4)'/%3E%3Cellipse cx='20.4' cy='7.4' rx='2.8' ry='3.6' transform='rotate(8 20.4 7.4)'/%3E%3Cellipse cx='25.6' cy='13.6' rx='2.7' ry='3.4' transform='rotate(22 25.6 13.6)'/%3E%3C/g%3E%3C/svg%3E");
 
@@ -103,26 +103,23 @@ $paw-logo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vie
   height: u($h);
   padding-inline: u(30);
   border-radius: u(100);
-  background: var(--ink);
   color: var(--cream);
   font-weight: 700;
   font-size: u(15);
   white-space: nowrap;
-  transition: color 0.45s var(--ease), background-color 0.6s var(--ease), transform 0.3s var(--ease);
-  // заливка акцентом растёт кругом снизу; обрезается скруглением самой подложки (без overflow: hidden —
-  // чтобы за край кнопки могла выглянуть лапка)
+  transition: color 0.45s var(--ease), transform 0.3s var(--ease);
+  // фон кнопки — отдельным слоем над лапкой: лапка прячется за кнопкой, видны только пальчики сверху
   &::before {
     content: "";
     position: absolute;
     z-index: -1;
     inset: 0;
     border-radius: inherit;
-    background: color-mix(in srgb, var(--ink) 70%, #000);
-    clip-path: circle(0% at 50% 130%);
-    transition: clip-path 0.6s var(--ease);
+    background: var(--ink);
+    transition: background-color 0.4s var(--ease);
   }
   @media (hover: hover) {
-    &:hover::before { clip-path: circle(150% at 50% 130%); }
+    &:hover::before { background: color-mix(in srgb, var(--ink) 70%, #000); }
   }
   // лапка-логотип выглядывает из-за верхнего края справа
   @include paw-logo(u(-30), calc(100% - #{u(70)}), u(44), translateY(u(28)), 12deg, -14deg);
@@ -197,15 +194,24 @@ $paw-print-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
   height: u($h);
   padding-inline: u(22);
   border-radius: u(100);
-  border: u(1.5) solid var(--line);
   color: var(--ink);
   font-weight: 600;
   font-size: u(14);
   white-space: nowrap;
-  transition: border-color 0.3s, background-color 0.3s, color 0.6s var(--ease);
-  // при наведении — сплошная светлая подложка (лапка за кнопкой не просвечивает) и та же лапка-логотип
+  transition: color 0.6s var(--ease);
+  // обводка и подложка — слоем над лапкой; при наведении подложка сплошная, лапка за кнопкой не видна
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    border-radius: inherit;
+    border: u(1.5) solid var(--line);
+    background: transparent;
+    transition: border-color 0.3s, background-color 0.3s;
+  }
   @media (hover: hover) {
-    &:hover { border-color: var(--ink); background: var(--cream); }
+    &:hover::before { border-color: var(--ink); background: var(--cream); }
   }
   @include paw-logo(u(-28), calc(100% - #{u(58)}), u(38), translateY(u(24)), 12deg, -14deg);
   &:focus-visible { outline: u(2) solid var(--ink); outline-offset: u(3); }
