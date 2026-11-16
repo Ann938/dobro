@@ -11,7 +11,11 @@
   Сценарий: собака подходит к экрану (масштаб к носу + расфокус), два вдоха — запотевание, лизь — мазок; на «стекле»
   остаётся след (маска-холст + backdrop-filter), тает 12 с; потом голова следит за курсором (кадры поворота, вправо — отражение).
   Пользователь собирается сгенерировать своё видео (подход+лизь и поворот головы на бежевом фоне) — тогда заменить.
-- Блоки — `Sections.tsx` (+ `sections.module.scss`), тексты — `src/content.ts`. Фото животных — Wikimedia Commons
-  (`research/pick.py`), авторы и лицензии — `src/credits.json`, выводятся в подвале (обязательно, CC BY / BY-SA).
-- Проверка: `npx next dev -p 3600`; `node scripts/shot-hero.mjs <out> [w h]`, `node scripts/shot-page.mjs <out> [w h]` (нужен PW_CHROME).
+- Блоки — `Sections.tsx` (+ `sections.module.scss`), тексты — `src/content.ts`. Фото животных — Wikimedia Commons,
+  авторы и лицензии — `src/credits.json`, выводятся в подвале (обязательно, CC BY / BY-SA).
+- Животных 120 (как в тексте первого экрана): 12 избранных (`featured` в content.ts, на главной 8) + 108 из `src/pets.json`
+  (`scripts/gen-pets.py`: фото из research/sel.json, имена/характеры генерируются, кадрирование — по маске rembg).
+  Страница «Все друзья» — `/friends` (`AllFriends.tsx`, `Catalog` в `Pets.tsx`): вкладки вида (Все/Собаки/Кошки),
+  галочки «Ладит с детьми», «Для квартиры», свой выпадающий список возраста, «Показать ещё» по 24. Сетка ровная.
+- Проверка: `npx next dev -p 3600`; `node scripts/shot-hero.mjs <out> [w h]`, `node scripts/shot-page.mjs <out> [w h]`, `node scripts/shot-friends.mjs <out> [w h]` (нужен PW_CHROME).
 - Публикация (только с согласия): `npm run deploy` → ann938.github.io/dobro (репо ещё не создан).

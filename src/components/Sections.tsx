@@ -3,41 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { adopt, faq, filters, footer, friends, help, pets, stories, type Pet } from "@/content";
+import { adopt, faq, footer, featured, friends, help, stories, type Pet } from "@/content";
+import { allPets } from "@/pets";
+import { Arrow, KindTabs, Paw, PetCard, img, type KindId } from "./Pets";
 import credits from "@/credits.json";
 import s from "./sections.module.scss";
 
 if (typeof window !== "undefined") gsap.registerPlugin(ScrollTrigger);
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
-const img = (id: string) => `${BASE}/pets/${id}.jpg`;
 const rub = (n: number) => n.toLocaleString("ru-RU") + " ₽";
 
-function Arrow() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-      <path d="M3 9h11M10 4.5 14.5 9 10 13.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function Paw({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden>
-      <ellipse cx="12" cy="16" rx="5" ry="4.2" fill="currentColor" />
-      <ellipse cx="5.5" cy="10.5" rx="2.1" ry="2.7" fill="currentColor" />
-      <ellipse cx="9.5" cy="6.5" rx="2.1" ry="2.8" fill="currentColor" />
-      <ellipse cx="14.5" cy="6.5" rx="2.1" ry="2.8" fill="currentColor" />
-      <ellipse cx="18.5" cy="10.5" rx="2.1" ry="2.7" fill="currentColor" />
-    </svg>
-  );
-}
-
-// ---------- Найдите друга ----------
-type F = (typeof filters)[number]["id"];
-const pass = (p: Pet, f: F) => f === "all" || (f === "kids" ? p.kids : f === "senior" ? p.senior : p.kind === f);
-
+// ---------- Найдите друга (главная: избранные + ссылка на всех) ----------
 export function Friends({ onMeet }: { onMeet: (p: Pet) => void }) {
-  const [f, setF] = useState<F>("all");
-  const list = pets.filter((p) => pass(p, f));
+  const [k, setK] = useState<KindId>("all");
+  const list = featured.filter((p) => k === "all" || p.kind === k).slice(0, 8);
   return (
     <section id="friends" className={s.friends}>
       <div className={s.head}>
@@ -53,44 +32,24 @@ export function Friends({ onMeet }: { onMeet: (p: Pet) => void }) {
           {friends.text}
         </p>
       </div>
-      <div className={s.chips} role="group" aria-label="Кого показать" data-reveal style={{ ["--d" as string]: 3 }}>
-        {filters.map((x) => (
-          <button key={x.id} type="button" aria-pressed={f === x.id} onClick={() => setF(x.id)}>
-            {x.label}
-            <span>{pets.filter((p) => pass(p, x.id)).length}</span>
-          </button>
-        ))}
+      <div className={s.bar} data-reveal style={{ ["--d" as string]: 3 }}>
+        <KindTabs value={k} onChange={setK} />
+        <a href={`${BASE}/friends/`} className={s.link}>
+          {friends.all} {allPets.length} <Arrow />
+        </a>
       </div>
-      <ul className={s.grid} key={f}>
+      <ul className={s.grid} key={k}>
         {list.map((p, i) => (
           <li key={p.id} style={{ ["--i" as string]: i }}>
-            <button type="button" className={s.card} onClick={() => onMeet(p)} aria-label={`Познакомиться: ${p.name}, ${p.age}`}>
-              <span className={s.photo}>
-                <img src={img(p.id)} alt="" loading="lazy" style={{ objectPosition: p.pos }} />
-                <span className={s.meet}>
-                  Познакомиться <Arrow />
-                </span>
-              </span>
-              <span className={s.cardHead}>
-                <span className={s.name}>{p.name}</span>
-                <span className={s.meta}>
-                  {p.age} · {p.sex}
-                </span>
-              </span>
-              <span className={s.tags}>
-                {p.tags.map((t) => (
-                  <i key={t}>{t}</i>
-                ))}
-              </span>
-              <span className={s.line}>{p.line}</span>
-            </button>
+            <PetCard p={p} onMeet={onMeet} />
           </li>
         ))}
       </ul>
-      <p className={s.more}>
-        <Paw className={s.morePaw} />
-        {friends.more}
-      </p>
+      <div className={s.allWrap}>
+        <a href={`${BASE}/friends/`} className={s.btn}>
+          {friends.all} {allPets.length} друзей <Arrow />
+        </a>
+      </div>
     </section>
   );
 }

@@ -1,0 +1,24 @@
+// Скриншоты блока «Найдите друга» на главной и страницы «Все друзья» с фильтрами: node scripts/shot-friends.mjs <out> [w h]
+import { chromium } from "playwright";
+const [out, w, h] = [process.argv[2], +(process.argv[3] || 1440), +(process.argv[4] || 900)];
+const b = await chromium.launch({ executablePath: process.env.PW_CHROME });
+const p = await b.newPage({ viewport: { width: w, height: h }, ...(w < 800 ? { isMobile: true, hasTouch: true, deviceScaleFactor: 2 } : {}) });
+const errs = []; p.on("pageerror", (e) => errs.push(String(e))); p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
+await p.goto("http://localhost:3600/", { waitUntil: "networkidle" });
+await p.evaluate(() => window.scrollTo(0, document.getElementById("friends").getBoundingClientRect().top + scrollY - 20));
+await p.waitForTimeout(1800);
+await p.screenshot({ path: `${out}-home.jpg`, type: "jpeg", quality: 80 });
+await p.goto("http://localhost:3600/friends/", { waitUntil: "networkidle" });
+await p.waitForTimeout(1500);
+await p.screenshot({ path: `${out}-all.jpg`, type: "jpeg", quality: 80 });
+await p.getByRole("tab", { name: /Кошки/ }).click();
+await p.getByRole("switch", { name: /детьми/ }).click();
+await p.locator("[aria-haspopup=listbox]").click();
+await p.waitForTimeout(600);
+await p.screenshot({ path: `${out}-filter.jpg`, type: "jpeg", quality: 80 });
+await p.getByRole("option", { name: /Малыши/ }).locator("button").click();
+await p.waitForTimeout(900);
+await p.screenshot({ path: `${out}-kittens.jpg`, type: "jpeg", quality: 80 });
+const sw = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+console.log("hscroll", sw, errs);
+await b.close();
