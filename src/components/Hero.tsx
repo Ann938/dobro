@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { nb } from "@/lib/typo";
 import s from "./hero.module.scss";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -228,7 +229,7 @@ export default function Hero() {
         <h1 className={s.h1}>
           Найдите друга, который <em>уже ждёт</em>
         </h1>
-        <p className={s.lead}>120 собак и кошек ищут дом. Познакомиться можно за один визит, документы и осмотр у ветеринара берём на себя.</p>
+        <p className={s.lead}>{nb("120 собак и кошек ищут дом. Познакомиться можно за один визит, документы и осмотр у ветеринара берём на себя.")}</p>
         <div className={s.ctas}>
           <a href="#friends" className={s.btn}>
             Найти друга

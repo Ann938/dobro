@@ -342,17 +342,25 @@ export function Faq() {
 export function Footer() {
   return (
     <footer id="contacts" className={s.footer}>
-      <div className={s.footTop}>
-        <p className={s.big}>
-          Приезжайте <em>знакомиться</em>
-        </p>
-        <div className={s.contacts}>
-          <p>{footer.address}</p>
-          <p>{footer.hours}</p>
-          <a href="tel:+79000000000">{footer.phone}</a>
+      <p className={s.big}>
+        {footer.title} <em>{footer.em}</em>
+      </p>
+      <div className={s.contacts}>
+        {footer.cols.map((c) => (
+          <div key={c.t}>
+            <p className={s.cLabel}>{c.t}</p>
+            {c.lines.map((l) => (
+              <p key={l}>{l}</p>
+            ))}
+          </div>
+        ))}
+        <div>
+          <p className={s.cLabel}>{footer.phone.t}</p>
+          <a href={footer.phone.href} className={s.phone}>
+            {footer.phone.v}
+          </a>
         </div>
       </div>
-      <p className={s.note}>{footer.note}</p>
       <details className={s.credits}>
         <summary>Фото: Wikimedia Commons — авторы и лицензии</summary>
         <ul>

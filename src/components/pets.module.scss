@@ -115,7 +115,16 @@
     -webkit-backdrop-filter: blur(6px);
     color: var(--ink);
   }
-  @include mobile { top: u(8); left: u(8); right: u(8); gap: u(4); i { font-size: max(11px, #{u(11)}); padding: u(4) u(8); } }
+  // на МВ — у нижнего края фото; если влезают, в одну строку
+  @include mobile {
+    top: auto;
+    bottom: u(8);
+    left: u(8);
+    right: u(8);
+    gap: u(4);
+    align-content: flex-end;
+    i { font-size: max(11px, #{u(11)}); padding: u(4) u(8); white-space: nowrap; }
+  }
 }
 .line {
   display: -webkit-box;
