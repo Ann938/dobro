@@ -152,30 +152,25 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: u(10);
-  // на МВ: две галочки в ряд, возраст — под ними на всю ширину
+  gap: u(24);
+  // на МВ: переключатель и возраст в одну строку
   @include mobile {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    flex-wrap: nowrap;
+    justify-content: space-between;
     gap: u(8);
-    > :last-child { grid-column: 1 / -1; }
   }
 }
-// галочка-переключатель
+// переключатель без обводки: тумблер и подпись
 .toggle {
   display: inline-flex;
   align-items: center;
   gap: u(10);
   height: u(50);
-  padding-inline: u(16) u(20);
-  border-radius: u(100);
-  border: u(1.5) solid var(--line);
+  padding-inline: u(4);
   font-weight: 600;
-  font-size: max(14px, #{u(14)});
-  transition: border-color 0.3s, background-color 0.3s;
-  @include mobile { height: u(44); padding-inline: u(10); gap: u(8); white-space: nowrap; justify-content: center; }
-  &[aria-checked="true"] { border-color: var(--ink); background: var(--cream); }
-  @media (hover: hover) { &:hover { border-color: var(--ink); } }
+  font-size: max(14px, #{u(15)});
+  white-space: nowrap;
+  @include mobile { height: u(44); }
 }
 .knob {
   position: relative;
@@ -213,7 +208,8 @@
     font-size: max(14px, #{u(14)});
     transition: border-color 0.3s;
     svg { transition: transform 0.35s var(--ease); }
-    @include mobile { height: u(44); width: 100%; justify-content: space-between; }
+    white-space: nowrap;
+    @include mobile { height: u(44); padding-inline: u(14); gap: u(8); }
   }
   &[data-open] > button { border-color: var(--ink); svg { transform: rotate(180deg); } }
   ul {
@@ -230,7 +226,7 @@
     visibility: hidden;
     transform: translateY(u(-6));
     transition: opacity 0.25s, transform 0.35s var(--ease), visibility 0.25s;
-    @include mobile { right: auto; left: 0; }
+    @include mobile { min-width: u(210); }
   }
   &[data-open] ul { opacity: 1; visibility: visible; transform: none; }
   li button {

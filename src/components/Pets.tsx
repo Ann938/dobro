@@ -123,14 +123,13 @@ const STEP = 24;
 export function Catalog({ onMeet }: { onMeet: (p: Pet) => void }) {
   const [k, setK] = useState<KindId>("all");
   const [kids, setKids] = useState(false);
-  const [flat, setFlat] = useState(false);
   const [age, setAge] = useState<AgeId>("any");
   const [shown, setShown] = useState(STEP);
   const a = ages.find((x) => x.id === age)!;
-  // вкладки считают с учётом галочек и возраста, список — ещё и с учётом вкладки
-  const base = useMemo(() => allPets.filter((p) => (!kids || p.kids) && (!flat || p.flat) && p.months >= a.min && p.months <= a.max), [kids, flat, a]);
+  // вкладки считают с учётом переключателя и возраста, список — ещё и с учётом вкладки
+  const base = useMemo(() => allPets.filter((p) => (!kids || p.kids) && p.months >= a.min && p.months <= a.max), [kids, a]);
   const list = base.filter((p) => k === "all" || p.kind === k);
-  const reset = () => (setKids(false), setFlat(false), setAge("any"));
+  const reset = () => (setKids(false), setAge("any"));
   const set = <T,>(f: (v: T) => void) => (v: T) => (f(v), setShown(STEP));
   return (
     <div className={s.catalog}>
@@ -140,15 +139,12 @@ export function Catalog({ onMeet }: { onMeet: (p: Pet) => void }) {
           <Toggle on={kids} onChange={set(setKids)}>
             Ладит с детьми
           </Toggle>
-          <Toggle on={flat} onChange={set(setFlat)}>
-            Для квартиры
-          </Toggle>
           <AgeSelect value={age} onChange={set(setAge)} />
         </div>
       </div>
       <p className={s.found} aria-live="polite">
         {list.length ? `Нашли ${list.length}` : "Никого не нашли"}
-        {(kids || flat || age !== "any") && (
+        {(kids || age !== "any") && (
           <button type="button" onClick={() => (reset(), setShown(STEP))}>
             Сбросить фильтры
           </button>

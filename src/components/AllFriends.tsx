@@ -22,7 +22,7 @@ export default function AllFriends() {
         <h1 className={s.h1}>
           {allPets.length} собак и кошек <em>ищут дом</em>
         </h1>
-        <p className={s.lead}>{nb("Выберите, кто вам ближе, и запишитесь на знакомство — волонтёр встретит у ворот.")}</p>
+        <p className={s.lead}>{nb("Выберите, кто вам ближе, и запишитесь на знакомство.")}</p>
         <Catalog onMeet={setPet} />
       </main>
       <Footer />
