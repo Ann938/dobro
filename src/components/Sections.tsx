@@ -57,6 +57,8 @@ export function Friends({ onMeet }: { onMeet: (p: Pet) => void }) {
 
 // ---------- Знакомство (окно) ----------
 const DAYS = ["Сб, 22 ноября", "Вс, 23 ноября", "Сб, 29 ноября", "Вс, 30 ноября"];
+// в кнопке — полное название дня: «Записаться на субботу»
+const DAY_FULL: Record<string, string> = { Сб: "субботу", Вс: "воскресенье" };
 export function Meet({ pet, onClose }: { pet: Pet | null; onClose: () => void }) {
   const [day, setDay] = useState(0);
   const [sent, setSent] = useState(false);
@@ -129,7 +131,7 @@ export function Meet({ pet, onClose }: { pet: Pet | null; onClose: () => void })
                 {err === "phone" && <em>Нужен номер из 10–11 цифр</em>}
               </label>
               <button type="submit" className={s.btn}>
-                Записаться на {DAYS[day].split(",")[0].toLowerCase()}
+                Записаться на {DAY_FULL[DAYS[day].split(",")[0]]}
                 <Arrow />
               </button>
             </form>

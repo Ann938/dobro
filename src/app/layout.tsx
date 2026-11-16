@@ -24,6 +24,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_ORIGIN || "http://localhost:3600"),
   title,
   description,
+  icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/favicon.svg` },
   openGraph: { title, description, type: "website", locale: "ru_RU" },
 };
 

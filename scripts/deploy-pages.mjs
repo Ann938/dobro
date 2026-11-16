@@ -48,7 +48,7 @@ const git = (args, cwd) => execFileSync("git", args, { cwd, stdio: ["ignore", "p
 const remote = git(["remote", "get-url", "origin"]);
 const name = git(["config", "user.name"]);
 const email = git(["config", "user.email"]);
-const dir = mkdtempSync(join(tmpdir(), "yagodnik-pages-"));
+const dir = mkdtempSync(join(tmpdir(), `${REPO}-pages-`));
 try {
   cpSync("out", dir, { recursive: true });
   git(["init", "-q", "-b", "gh-pages"], dir);
