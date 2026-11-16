@@ -66,23 +66,21 @@ function drawLick(mask: CanvasRenderingContext2D, wet: CanvasRenderingContext2D,
   }
 }
 
-// Первый экран: щенок (сгенерированное видео, research/gen) подходит к экрану, лижет «стекло» и садится.
+// Первый экран: щенок (сгенерированное видео, research/gen2) подходит к экрану, лижет «стекло» и садится; ролик по кругу.
 // След носа, запотевание и мазки языка на «стекле» рисуются поверх видео в моменты касания (время — по кадрам ролика).
 const NOSE = { x: 0.5, y: 0.5 }; // нос щенка у стекла — доли кадра
-const EV = { print: 3.9, fog: [4.4, 5.2, 6.0], lick: [6.2, 6.95, 8.2], close: [3.3, 9.0] };
+const EV = { print: 3.9, fog: [4.4, 5.2, 6.0], lick: [6.2, 6.95, 8.2], dry: 10.2, close: [3.3, 9.0] };
 
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
   const box = useRef<HTMLDivElement>(null);
-  const intro = useRef<HTMLVideoElement>(null);
-  const idle = useRef<HTMLVideoElement>(null);
+  const video = useRef<HTMLVideoElement>(null);
   const glass = useRef<HTMLDivElement>(null);
   const wetC = useRef<HTMLCanvasElement>(null);
   const fog = useRef<HTMLDivElement>(null);
-  const boopRef = useRef<() => void>(() => {});
 
   useEffect(() => {
-    const hero = root.current!, boxEl = box.current!, vIn = intro.current!, vIdle = idle.current!;
+    const hero = root.current!, boxEl = box.current!, vid = video.current!;
     const glassEl = glass.current!, wc = wetC.current!, fogEl = fog.current!;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const desk = () => window.matchMedia("(min-width: 1024px)").matches;
@@ -137,61 +135,49 @@ export default function Hero() {
     };
     const breath = () => gsap.fromTo(fogEl, { opacity: 0.25 }, { opacity: 0.85, duration: 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" });
 
-    // ---- сценарий по времени ролика ----
+    // ---- сценарий по времени ролика; ролик крутится по кругу целиком ----
     let last = 0;
     let raf = 0;
     const tick = () => {
-      const t = vIn.currentTime;
-      if (t < last) last = 0;
+      const t = vid.currentTime;
+      // новый круг: стекло снова чистое
+      if (t + 1 < last) {
+        gsap.killTweensOf([glassEl, wc, fogEl]);
+        clear();
+        gsap.set([glassEl, wc, fogEl], { opacity: 0 });
+        last = 0;
+      }
       const hit = (e: number) => last < e && t >= e;
       if (hit(EV.print)) print();
       EV.fog.forEach((e) => hit(e) && breath());
       EV.lick.forEach((e) => hit(e) && lick());
+      // щенок отошёл — след на стекле высыхает до конца круга
+      if (hit(EV.dry)) gsap.to([glassEl, wc], { opacity: 0, duration: 3.5, ease: "power1.in" });
       last = t;
       // вблизи текст чуть уходит, чтобы не спорить с мордой
       const [a, b] = EV.close;
       const k = Math.max(0, Math.min(1, (t - a) / 0.5, (b - t) / 0.5));
-      hero.style.setProperty("--k", (hero.hasAttribute("data-idle") ? 0 : k).toFixed(3));
+      hero.style.setProperty("--k", k.toFixed(3));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
-    const toIdle = () => {
-      vIdle.currentTime = 0;
-      vIdle.play().catch(() => {});
-      hero.setAttribute("data-idle", "");
-      // след на стекле медленно высыхает
-      gsap.to([glassEl, wc], { opacity: 0, duration: 12, delay: 3, ease: "power1.in" });
-    };
-    vIn.addEventListener("ended", toIdle);
-
-    const boop = () => {
-      gsap.killTweensOf([glassEl, wc]);
-      clear();
-      last = 0;
-      hero.removeAttribute("data-idle");
-      vIn.currentTime = 0;
-      vIn.play().catch(toIdle);
-    };
-    boopRef.current = boop;
-
-    // старт: как только ролик готов (при «меньше движения» щенок сразу сидит)
+    // старт: как только ролик готов; при «меньше движения» — стоп-кадр, где щенок сидит
     const start = () => {
       if (dead) return;
       hero.setAttribute("data-ready", "");
       if (reduced) {
-        vIn.pause();
-        toIdle();
-      } else vIn.play().catch(toIdle);
+        vid.loop = false;
+        vid.currentTime = vid.duration ? vid.duration - 0.1 : 14.9;
+      } else vid.play().catch(() => {});
     };
-    if (vIn.readyState >= 3) start();
-    else vIn.addEventListener("canplay", start, { once: true });
+    if (vid.readyState >= 3) start();
+    else vid.addEventListener("canplay", start, { once: true });
 
     return () => {
       dead = true;
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", layout);
-      vIn.removeEventListener("ended", toIdle);
     };
   }, []);
 
@@ -218,8 +204,7 @@ export default function Hero() {
       </header>
 
       <div className={s.dog} ref={box} aria-hidden>
-        <video ref={idle} className={s.video} src={`${BASE}/pup/idle.mp4`} muted loop playsInline preload="auto" />
-        <video ref={intro} className={`${s.video} ${s.intro}`} src={`${BASE}/pup/intro.mp4`} poster={`${BASE}/pup/poster.jpg`} muted playsInline preload="auto" />
+        <video ref={video} className={s.video} src={`${BASE}/pup/pup.mp4`} poster={`${BASE}/pup/poster.jpg`} muted loop playsInline preload="auto" />
       </div>
 
       <div className={s.text}>
@@ -243,9 +228,6 @@ export default function Hero() {
       <canvas className={s.wet} ref={wetC} aria-hidden />
       <div className={s.fog} ref={fog} aria-hidden />
 
-      <button type="button" className={s.boop} onClick={() => boopRef.current()}>
-        Позвать ещё раз
-      </button>
     </section>
   );
 }

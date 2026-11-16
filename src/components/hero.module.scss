@@ -87,11 +87,6 @@
   object-fit: cover;
   display: block;
 }
-// ролик подхода сверху; когда щенок сел — под ним уже идёт цикл сидения
-.intro {
-  transition: opacity 0.35s linear;
-  .hero[data-idle] & { opacity: 0; }
-}
 
 // ---- текст ----
 .text {
@@ -167,15 +162,4 @@
   background: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 22vmin);
   mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 0, #000 9vmin, transparent 24vmin);
   -webkit-mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 0, #000 9vmin, transparent 24vmin);
-}
-
-.boop {
-  position: absolute;
-  z-index: 7;
-  right: calc(50% - #{u(640)});
-  bottom: u(32);
-  @include btn-ghost(44);
-  background: color-mix(in srgb, var(--cream) 60%, transparent);
-  backdrop-filter: blur(8px);
-  @include mobile { right: 50%; translate: 50% 0; bottom: u(20); }
 }
