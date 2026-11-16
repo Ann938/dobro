@@ -20,6 +20,9 @@
 - Истории «было → стало»: 6 штук в `stories` (content.ts), на главной 3 карточки-ссылки (`StoryCard.tsx`),
   `/stories` — все, `/stories/<id>` — полная история (`StoryViews.tsx`, главы, цитата, факты, следующая история, призыв).
   В режиме cacheComponents у динамической страницы `instant = false` (а `dynamicParams` запрещён).
-- Шапка внутренних страниц — `PageHeader.tsx`.
+- Шапка внутренних страниц — `PageHeader.tsx`, знак — кошачья лапка `Logo.tsx` (и `public/favicon.svg`).
+- Запись на знакомство (`Meet` в Sections.tsx): в выходные — без записи (11–17), на будни — свой календарь
+  (текущий и следующий месяц, выходные помечены и не выбираются) и время; окно создаётся только по клику (дата — в браузере).
+- Все тексты проходят `nbDeep` (`src/lib/typo.ts`): неразрывный пробел после предлогов и союзов.
 - Проверка: `npx next dev -p 3600`; `node scripts/shot-hero.mjs <out> [w h]`, `node scripts/shot-page.mjs <out> [w h]`, `node scripts/shot-friends.mjs <out> [w h]`, `node scripts/shot-stories.mjs <out> [w h]` (нужен PW_CHROME).
 - Публикация (только с согласия): `npm run deploy` → ann938.github.io/dobro (репо Ann938/dobro, noindex).

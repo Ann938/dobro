@@ -143,7 +143,73 @@
     font-weight: 600;
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     &[aria-checked="true"] { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+    // занятое время
+    &:disabled { opacity: 0.4; text-decoration: line-through; cursor: not-allowed; }
   }
+}
+// плашка «в выходные — без записи»
+.walkin {
+  display: flex;
+  gap: u(12);
+  align-items: flex-start;
+  margin-top: u(20);
+  padding: u(14) u(16);
+  border-radius: u(16);
+  background: var(--bg);
+  font-size: u(14);
+  line-height: 1.45;
+  b { white-space: nowrap; }
+}
+.walkinPaw { flex: none; width: u(22); height: u(22); color: var(--accent); margin-top: u(1); }
+// календарь будних дней
+.cal {
+  margin-top: u(10);
+  padding: u(14);
+  border-radius: u(18);
+  border: u(1.5) solid var(--line);
+  background: #fff;
+}
+.calHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: u(8);
+  b { font-weight: 700; font-size: u(15); }
+  button {
+    width: u(36);
+    height: u(36);
+    border-radius: 50%;
+    font-size: u(22);
+    line-height: 1;
+    transition: background-color 0.2s;
+    &:disabled { opacity: 0.25; cursor: default; }
+    @media (hover: hover) { &:not(:disabled):hover { background: var(--bg); } }
+  }
+}
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: u(4);
+  text-align: center;
+}
+.calWd {
+  font-size: u(12);
+  font-weight: 600;
+  color: var(--muted);
+  padding-block: u(4);
+  &[data-weekend] { color: var(--accent); }
+}
+.calDay {
+  height: u(38);
+  border-radius: u(12);
+  font-size: max(14px, #{u(14)});
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s;
+  &:disabled { color: color-mix(in srgb, var(--ink) 28%, transparent); cursor: default; font-weight: 500; }
+  // выходные — без записи: мягкая подложка вместо выбора
+  &[data-weekend] { background: color-mix(in srgb, var(--accent) 9%, transparent); color: color-mix(in srgb, var(--accent) 60%, var(--ink)); }
+  &[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+  @media (hover: hover) { &:not(:disabled):not([aria-pressed="true"]):hover { background: var(--bg); } }
 }
 .field {
   display: grid;

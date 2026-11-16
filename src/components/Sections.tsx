@@ -8,6 +8,7 @@ import { allPets } from "@/pets";
 import { Arrow, KindTabs, Paw, PetCard, img, type KindId } from "./Pets";
 import credits from "@/credits.json";
 import { StoryCard } from "./StoryCard";
+import { nb } from "@/lib/typo";
 import s from "./sections.module.scss";
 
 if (typeof window !== "undefined") gsap.registerPlugin(ScrollTrigger);
@@ -56,19 +57,97 @@ export function Friends({ onMeet }: { onMeet: (p: Pet) => void }) {
 }
 
 // ---------- Знакомство (окно) ----------
-const DAYS = ["Сб, 22 ноября", "Вс, 23 ноября", "Сб, 29 ноября", "Вс, 30 ноября"];
-// в кнопке — полное название дня: «Записаться на субботу»
-const DAY_FULL: Record<string, string> = { Сб: "субботу", Вс: "воскресенье" };
+// В выходные приезжают без записи (11–17), на будни — выбор даты в календаре и времени
+const WD = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+const MONTHS = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+const MONTHS_GEN = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+const SLOTS = ["10:00", "12:00", "14:00", "16:00", "18:00"];
+const dayOnly = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
+// часть времени «занята» — как в настоящем расписании (детерминированно от даты)
+const taken = (d: Date, i: number) => (d.getDate() * 7 + d.getMonth() * 3 + i * 5) % 6 === 0;
+const firstFree = (d: Date) => SLOTS.findIndex((_, i) => !taken(d, i));
+
+function Calendar({ value, onChange, min }: { value: Date; onChange: (d: Date) => void; min: Date }) {
+  const [view, setView] = useState({ y: value.getFullYear(), m: value.getMonth() });
+  const first = new Date(view.y, view.m, 1);
+  const lead = (first.getDay() + 6) % 7;
+  const days = new Date(view.y, view.m + 1, 0).getDate();
+  const canPrev = view.y > min.getFullYear() || view.m > min.getMonth();
+  const canNext = (view.y - min.getFullYear()) * 12 + view.m - min.getMonth() < 1; // текущий месяц и следующий
+  const shift = (k: number) => setView(({ y, m }) => ({ y: m + k < 0 ? y - 1 : m + k > 11 ? y + 1 : y, m: (m + k + 12) % 12 }));
+  return (
+    <div className={s.cal}>
+      <div className={s.calHead}>
+        <button type="button" onClick={() => shift(-1)} disabled={!canPrev} aria-label="Предыдущий месяц">
+          ‹
+        </button>
+        <b>
+          {MONTHS[view.m]} {view.y}
+        </b>
+        <button type="button" onClick={() => shift(1)} disabled={!canNext} aria-label="Следующий месяц">
+          ›
+        </button>
+      </div>
+      <div className={s.calGrid} role="grid">
+        {WD.map((w, i) => (
+          <span key={w} className={s.calWd} data-weekend={i > 4 || undefined}>
+            {w}
+          </span>
+        ))}
+        {Array.from({ length: lead }, (_, i) => (
+          <span key={`e${i}`} />
+        ))}
+        {Array.from({ length: days }, (_, i) => {
+          const d = new Date(view.y, view.m, i + 1);
+          const we = isWeekend(d);
+          const off = d < min || we;
+          const on = d.getTime() === value.getTime();
+          return (
+            <button
+              key={i}
+              type="button"
+              className={s.calDay}
+              disabled={off}
+              aria-pressed={on}
+              data-weekend={(we && d >= min) || undefined}
+              aria-label={`${i + 1} ${MONTHS_GEN[view.m]}${we ? ", выходной — без записи" : ""}`}
+              onClick={() => onChange(d)}
+            >
+              {i + 1}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// окно создаётся только при выборе питомца — дата «сегодня» читается в браузере, а не при сборке
 export function Meet({ pet, onClose }: { pet: Pet | null; onClose: () => void }) {
-  const [day, setDay] = useState(0);
+  return pet ? <MeetSheet pet={pet} onClose={onClose} /> : null;
+}
+
+function MeetSheet({ pet, onClose }: { pet: Pet; onClose: () => void }) {
+  // ближайший будний день начиная с завтрашнего
+  const [min] = useState(() => {
+    const d = dayOnly(new Date());
+    d.setDate(d.getDate() + 1);
+    return d;
+  });
+  const [date, setDate] = useState(() => {
+    const d = new Date(min);
+    while (isWeekend(d)) d.setDate(d.getDate() + 1);
+    return d;
+  });
+  const [slot, setSlot] = useState(() => Math.max(0, firstFree(date)));
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!pet) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
-    box.current?.querySelector<HTMLElement>("input")?.focus();
+    box.current?.querySelector<HTMLElement>("[aria-label=Закрыть]")?.focus();
     const l = (window as unknown as { __lenis?: { stop(): void; start(): void } }).__lenis;
     l?.stop();
     return () => {
@@ -76,7 +155,8 @@ export function Meet({ pet, onClose }: { pet: Pet | null; onClose: () => void })
       l?.start();
     };
   }, [pet, onClose]);
-  if (!pet) return null;
+  const pick = (d: Date) => (setDate(d), setSlot(Math.max(0, firstFree(d))));
+  const when = `${date.getDate()} ${MONTHS_GEN[date.getMonth()]}, ${SLOTS[slot]}`;
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -99,7 +179,7 @@ export function Meet({ pet, onClose }: { pet: Pet | null; onClose: () => void })
               <Paw className={s.donePaw} />
               <h3 className={s.h3}>{pet.name} ждёт вас</h3>
               <p>
-                {DAYS[day]}, с 11:00. Волонтёр позвонит накануне и напомнит, как добраться. Возьмите паспорт — и, если хотите, вкусняшку.
+                {nb(`${date.getDate()} ${MONTHS_GEN[date.getMonth()]} в ${SLOTS[slot]}. Волонтёр позвонит накануне и напомнит, как добраться. Возьмите паспорт — и, если хотите, вкусняшку.`)}
               </p>
               <button type="button" className={s.btn} onClick={onClose}>
                 Хорошо
@@ -112,11 +192,19 @@ export function Meet({ pet, onClose }: { pet: Pet | null; onClose: () => void })
                 {pet.name}, {pet.age}
               </h3>
               <p className={s.sheetLine}>{pet.line}</p>
-              <p className={s.fieldLabel}>Когда удобно приехать</p>
-              <div className={s.days} role="radiogroup" aria-label="День визита">
-                {DAYS.map((d, i) => (
-                  <button key={d} type="button" role="radio" aria-checked={day === i} onClick={() => setDay(i)}>
-                    {d}
+              <p className={s.walkin}>
+                <Paw className={s.walkinPaw} />
+                <span>
+                  В выходные приезжайте без записи: <b>сб–вс, 11:00–17:00</b>. На будни — выберите день и время.
+                </span>
+              </p>
+              <p className={s.fieldLabel}>День в будни</p>
+              <Calendar value={date} onChange={pick} min={min} />
+              <p className={s.fieldLabel}>Время</p>
+              <div className={s.days} role="radiogroup" aria-label="Время визита">
+                {SLOTS.map((sl, i) => (
+                  <button key={sl} type="button" role="radio" aria-checked={slot === i} disabled={taken(date, i)} onClick={() => setSlot(i)}>
+                    {sl}
                   </button>
                 ))}
               </div>
@@ -131,7 +219,7 @@ export function Meet({ pet, onClose }: { pet: Pet | null; onClose: () => void })
                 {err === "phone" && <em>Нужен номер из 10–11 цифр</em>}
               </label>
               <button type="submit" className={s.btn}>
-                Записаться на {DAY_FULL[DAYS[day].split(",")[0]]}
+                Записаться на {when}
                 <Arrow />
               </button>
             </form>

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { nb } from "@/lib/typo";
+import LogoMark from "./Logo";
 import s from "./hero.module.scss";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -202,12 +203,7 @@ export default function Hero() {
     <section ref={root} id="top" className={s.hero}>
       <header className={s.header}>
         <a href="#top" className={s.logo} aria-label="Добро — наверх">
-          <svg viewBox="0 0 32 32" aria-hidden>
-            <path d="M16 27s-10-6.2-10-13.2C6 9.6 9 7 12.2 7c1.9 0 3 .9 3.8 2 .8-1.1 1.9-2 3.8-2C23 7 26 9.6 26 13.8 26 20.8 16 27 16 27z" fill="var(--accent)" />
-            <circle cx="12.6" cy="14.2" r="1.5" fill="var(--cream)" />
-            <circle cx="19.4" cy="14.2" r="1.5" fill="var(--cream)" />
-            <ellipse cx="16" cy="18.4" rx="2.2" ry="1.6" fill="var(--cream)" />
-          </svg>
+          <LogoMark />
           Добро
         </a>
         <nav className={s.nav} aria-label="Разделы">
