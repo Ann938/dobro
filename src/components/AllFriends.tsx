@@ -18,7 +18,6 @@ export default function AllFriends() {
     <>
       <PageHeader />
       <main className={s.main}>
-        <p className={s.label}>Все друзья</p>
         <h1 className={s.h1}>
           {allPets.length} собак и кошек <em>ищут дом</em>
         </h1>

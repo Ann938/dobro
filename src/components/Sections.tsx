@@ -168,8 +168,15 @@ function MeetSheet({ pet, onClose }: { pet: Pet; onClose: () => void }) {
     box.current?.querySelector<HTMLElement>("[aria-label=Закрыть]")?.focus();
     const l = (window as unknown as { __lenis?: { stop(): void; start(): void } }).__lenis;
     l?.stop();
+    // страница под окном не прокручивается (на телефоне Lenis выключен — фиксируем body, iOS это понимает)
+    const y = window.scrollY;
+    const b = document.body.style;
+    const prev = { position: b.position, top: b.top, width: b.width, overflow: b.overflow };
+    Object.assign(b, { position: "fixed", top: `-${y}px`, width: "100%", overflow: "hidden" });
     return () => {
       window.removeEventListener("keydown", onKey);
+      Object.assign(b, prev);
+      window.scrollTo(0, y);
       l?.start();
     };
   }, [pet, onClose]);
