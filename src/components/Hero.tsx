@@ -68,8 +68,8 @@ function drawLick(mask: CanvasRenderingContext2D, wet: CanvasRenderingContext2D,
 
 // Первый экран: щенок (сгенерированное видео, research/gen) подходит к экрану, лижет «стекло» и садится.
 // След носа, запотевание и мазки языка на «стекле» рисуются поверх видео в моменты касания (время — по кадрам ролика).
-const NOSE = { x: 0.51, y: 0.47 }; // нос щенка у стекла — доли кадра
-const EV = { print: 3.9, fog: [4.15, 4.85, 6.95], lick: [5.65, 6.15, 7.65], close: [3.4, 8.4] };
+const NOSE = { x: 0.5, y: 0.5 }; // нос щенка у стекла — доли кадра
+const EV = { print: 3.9, fog: [4.4, 5.2, 6.0], lick: [6.2, 6.95, 8.2], close: [3.3, 9.0] };
 
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
