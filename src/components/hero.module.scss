@@ -1,0 +1,183 @@
+@use "styles/core" as *;
+
+// Первый экран: собака на ровном фоне сайта, текст слева, «стекло» экрана поверх всего.
+.hero {
+  --k: 0;
+  position: relative;
+  height: 100svh;
+  min-height: u(640);
+  overflow: hidden;
+  background: radial-gradient(60% 70% at 70% 62%, var(--cream) 0%, transparent 70%), var(--bg);
+  @include mobile {
+    min-height: u(700);
+    background: radial-gradient(90% 50% at 50% 80%, var(--cream) 0%, transparent 70%), var(--bg);
+  }
+}
+
+// ---- шапка ----
+.header {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  left: 50%;
+  translate: -50% 0;
+  @include container;
+  height: u(84);
+  display: flex;
+  align-items: center;
+  gap: u(40);
+  @include mobile { height: u(64); }
+}
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: u(10);
+  @include display;
+  font-size: u(28);
+  letter-spacing: u(-0.6);
+  svg { width: u(34); height: u(34); }
+  @include mobile { font-size: u(24); }
+}
+.nav {
+  display: flex;
+  gap: u(32);
+  margin-left: auto;
+  font-weight: 500;
+  font-size: u(15);
+  a {
+    position: relative;
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: u(-4);
+      height: u(1.5);
+      background: currentColor;
+      transition: right 0.4s var(--ease);
+    }
+    @media (hover: hover) {
+      &:hover::after { right: 0; }
+    }
+  }
+  @include mobile { display: none; }
+}
+.headerBtn {
+  @include btn-ghost(46);
+  @include mobile { margin-left: auto; height: u(40); font-size: max(14px, #{u(14)}); }
+}
+
+// ---- собака ----
+.dog {
+  position: absolute;
+  z-index: 1;
+  will-change: transform, filter;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease);
+  .hero[data-ready] & { opacity: 1; }
+}
+.flip {
+  position: absolute;
+  inset: 0;
+  // края кадра растворяются в фоне страницы
+  mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%), linear-gradient(180deg, transparent 0, #000 10%);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+}
+.video,
+.turn {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.turn { opacity: 0; }
+
+// ---- текст ----
+.text {
+  position: absolute;
+  z-index: 3;
+  left: calc(50% - #{u(640)});
+  top: 50%;
+  translate: 0 -46%;
+  width: u(560);
+  opacity: calc(1 - var(--k) * 0.55);
+  @include mobile {
+    left: 50%;
+    top: u(88);
+    translate: -50% 0;
+    width: u(358);
+    text-align: center;
+  }
+}
+.label {
+  @include type-label;
+  color: var(--accent);
+  margin-bottom: u(22);
+}
+.h1 {
+  @include type-h1;
+  text-wrap: balance;
+  em { font-style: italic; color: var(--accent); }
+}
+.lead {
+  @include type-lead;
+  color: var(--muted);
+  margin-top: u(26);
+  max-width: u(470);
+  @include mobile { margin-inline: auto; margin-top: u(14); font-size: u(15); }
+}
+.ctas {
+  display: flex;
+  gap: u(12);
+  margin-top: u(38);
+  @include mobile { margin-top: u(18); justify-content: center; }
+}
+.btn { @include btn(60); }
+.ghost { @include btn-ghost(60); padding-inline: u(28); font-size: u(15); @include mobile { display: none; } }
+
+// ---- «стекло» экрана ----
+.glass,
+.wet,
+.fog {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+// мутное пятно: стекло под следом размывает и чуть высветляет то, что за ним
+.glass {
+  opacity: 0;
+  backdrop-filter: blur(7px) brightness(1.1) saturate(0.85) contrast(0.92);
+  -webkit-backdrop-filter: blur(7px) brightness(1.1) saturate(0.85) contrast(0.92);
+  background: rgba(255, 250, 242, 0.16);
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+}
+.wet {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+// запотевание от дыхания
+.fog {
+  opacity: 0;
+  backdrop-filter: blur(12px) brightness(1.08);
+  -webkit-backdrop-filter: blur(12px) brightness(1.08);
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 60%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 0, #000 12vmin, transparent 30vmin);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0, #000 12vmin, transparent 30vmin);
+}
+
+.boop {
+  position: absolute;
+  z-index: 7;
+  right: calc(50% - #{u(640)});
+  bottom: u(32);
+  @include btn-ghost(44);
+  background: color-mix(in srgb, var(--cream) 60%, transparent);
+  backdrop-filter: blur(8px);
+  @include mobile { right: 50%; translate: 50% 0; bottom: u(20); }
+}

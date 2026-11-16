@@ -1,0 +1,18 @@
+import { chromium } from "playwright";
+const [out, w, h] = [process.argv[2], +(process.argv[3] || 1440), +(process.argv[4] || 900)];
+const b = await chromium.launch({ executablePath: process.env.PW_CHROME, args: ["--use-angle=d3d11", "--enable-gpu", "--autoplay-policy=no-user-gesture-required"] });
+const p = await b.newPage({ viewport: { width: w, height: h } });
+const errs = []; p.on("pageerror", (e) => errs.push(String(e))); p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
+await p.goto("http://localhost:3600/", { waitUntil: "networkidle" });
+await p.waitForSelector("[data-ready]", { timeout: 30000 });
+const t0 = Date.now();
+const at = async (ms, name) => { const d = ms - (Date.now() - t0); if (d > 0) await p.waitForTimeout(d); await p.screenshot({ path: `${out}-${name}.jpg`, type: "jpeg", quality: 82 }); };
+await at(300, "a-sit");
+await at(1700, "b-close");
+await at(2350, "c-nose");
+await at(3500, "d-lick");
+await at(5200, "e-back");
+await p.mouse.move(80, 450); await at(7200, "f-left");
+await p.mouse.move(w - 60, 450); await at(9400, "g-right");
+console.log(errs);
+await b.close();
