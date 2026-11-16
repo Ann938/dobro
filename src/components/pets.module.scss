@@ -249,6 +249,8 @@
   font-weight: 600;
   color: var(--muted);
   button { color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: u(3); }
+  // на МВ «Сбросить фильтры» — у правого края
+  @include mobile { button { margin-left: auto; } }
 }
 .grid {
   display: grid;
