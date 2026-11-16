@@ -1,0 +1,26 @@
+@use "styles/core" as *;
+
+.main { @include container; padding-block: u(80); }
+.h1 { @include type-h2; }
+.lead { @include type-lead; color: var(--muted); margin-top: u(12); }
+.row {
+  display: grid;
+  grid-template-columns: u(420) minmax(0, 1fr);
+  gap: u(40);
+  align-items: center;
+  padding-block: u(56);
+  border-bottom: u(1.5) solid var(--line);
+  h2 { @include type-h3; }
+  p { margin-top: u(8); color: var(--muted); }
+  @include mobile { grid-template-columns: minmax(0, 1fr); }
+}
+.h2 { @include type-h3; }
+.btns { display: flex; flex-wrap: wrap; gap: u(24); padding-top: u(30); }
+.btn { @include btn(60); }
+.peek { @include paw-peek; }
+.walk { @include paw-walk; }
+.both {
+  @include paw-peek;
+  // для «вместе» следы — вторым слоем фона у заливки
+  &::before { background: $paw-print-soft 0 50% / u(64) u(40) repeat-x, var(--accent); }
+}
