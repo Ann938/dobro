@@ -186,22 +186,28 @@
     @media (hover: hover) { &:not(:disabled):hover { background: var(--bg); } }
   }
 }
-.calGrid {
+// лента недель: каждая неделя — страница шириной с ленту, листается свайпом с привязкой
+.strip {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+.week {
+  flex: 0 0 100%;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: u(4);
-  text-align: center;
-}
-.calWd {
-  font-size: u(12);
-  font-weight: 600;
-  color: var(--muted);
-  padding-block: u(4);
-  &[data-weekend] { color: var(--accent); }
+  scroll-snap-align: start;
 }
 .calDay {
-  height: u(38);
+  display: grid;
+  place-items: center;
+  gap: u(2);
+  height: u(54);
   border-radius: u(12);
+  small { font-size: u(11); font-weight: 600; opacity: 0.6; }
   font-size: max(14px, #{u(14)});
   font-weight: 600;
   transition: background-color 0.2s, color 0.2s;

@@ -68,56 +68,74 @@ const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
 const taken = (d: Date, i: number) => (d.getDate() * 7 + d.getMonth() * 3 + i * 5) % 6 === 0;
 const firstFree = (d: Date) => SLOTS.findIndex((_, i) => !taken(d, i));
 
+// Неделя в строку (Пн–Вс), соседние недели — свайпом или стрелками; выходные видны, но без записи
+const WEEKS = 6;
 function Calendar({ value, onChange, min }: { value: Date; onChange: (d: Date) => void; min: Date }) {
-  const [view, setView] = useState({ y: value.getFullYear(), m: value.getMonth() });
-  const first = new Date(view.y, view.m, 1);
-  const lead = (first.getDay() + 6) % 7;
-  const days = new Date(view.y, view.m + 1, 0).getDate();
-  const canPrev = view.y > min.getFullYear() || view.m > min.getMonth();
-  const canNext = (view.y - min.getFullYear()) * 12 + view.m - min.getMonth() < 1; // текущий месяц и следующий
-  const shift = (k: number) => setView(({ y, m }) => ({ y: m + k < 0 ? y - 1 : m + k > 11 ? y + 1 : y, m: (m + k + 12) % 12 }));
+  const strip = useRef<HTMLDivElement>(null);
+  // понедельник текущей недели
+  const [start] = useState(() => {
+    const d = new Date(min);
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    return d;
+  });
+  const [week, setWeek] = useState(() => Math.floor((value.getTime() - start.getTime()) / (7 * 864e5)));
+  const monday = (w: number) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + w * 7);
+  const go = (w: number) => {
+    const el = strip.current!;
+    el.scrollTo({ left: w * el.clientWidth, behavior: "smooth" });
+  };
+  useEffect(() => {
+    const el = strip.current!;
+    el.scrollLeft = week * el.clientWidth; // открыть на неделе выбранного дня
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const onScroll = () => {
+    const el = strip.current!;
+    setWeek(Math.round(el.scrollLeft / el.clientWidth));
+  };
+  // подпись месяца: по четвергу недели (неделя «принадлежит» тому месяцу, где большая её часть)
+  const thu = new Date(monday(week));
+  thu.setDate(thu.getDate() + 3);
   return (
     <div className={s.cal}>
       <div className={s.calHead}>
-        <button type="button" onClick={() => shift(-1)} disabled={!canPrev} aria-label="Предыдущий месяц">
+        <button type="button" onClick={() => go(week - 1)} disabled={week <= 0} aria-label="Предыдущая неделя">
           ‹
         </button>
         <b>
-          {MONTHS[view.m]} {view.y}
+          {MONTHS[thu.getMonth()]} {thu.getFullYear()}
         </b>
-        <button type="button" onClick={() => shift(1)} disabled={!canNext} aria-label="Следующий месяц">
+        <button type="button" onClick={() => go(week + 1)} disabled={week >= WEEKS - 1} aria-label="Следующая неделя">
           ›
         </button>
       </div>
-      <div className={s.calGrid} role="grid">
-        {WD.map((w, i) => (
-          <span key={w} className={s.calWd} data-weekend={i > 4 || undefined}>
-            {w}
-          </span>
+      <div className={s.strip} ref={strip} onScroll={onScroll}>
+        {Array.from({ length: WEEKS }, (_, w) => (
+          <div key={w} className={s.week}>
+            {WD.map((wd, i) => {
+              const d = new Date(monday(w));
+              d.setDate(d.getDate() + i);
+              const we = i > 4;
+              const off = d < min || we;
+              const on = d.getTime() === value.getTime();
+              return (
+                <button
+                  key={wd}
+                  type="button"
+                  className={s.calDay}
+                  disabled={off}
+                  aria-pressed={on}
+                  data-weekend={(we && d >= min) || undefined}
+                  aria-label={`${wd}, ${d.getDate()} ${MONTHS_GEN[d.getMonth()]}${we ? ", выходной — без записи" : ""}`}
+                  onClick={() => onChange(d)}
+                >
+                  <small>{wd}</small>
+                  {d.getDate()}
+                </button>
+              );
+            })}
+          </div>
         ))}
-        {Array.from({ length: lead }, (_, i) => (
-          <span key={`e${i}`} />
-        ))}
-        {Array.from({ length: days }, (_, i) => {
-          const d = new Date(view.y, view.m, i + 1);
-          const we = isWeekend(d);
-          const off = d < min || we;
-          const on = d.getTime() === value.getTime();
-          return (
-            <button
-              key={i}
-              type="button"
-              className={s.calDay}
-              disabled={off}
-              aria-pressed={on}
-              data-weekend={(we && d >= min) || undefined}
-              aria-label={`${i + 1} ${MONTHS_GEN[view.m]}${we ? ", выходной — без записи" : ""}`}
-              onClick={() => onChange(d)}
-            >
-              {i + 1}
-            </button>
-          );
-        })}
       </div>
     </div>
   );
