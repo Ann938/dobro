@@ -9,7 +9,7 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 type Rnd = () => number;
 const rng = (seed: number): Rnd => () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
-// След на «стекле». mask — где стекло мутное (за ним всё размыто и светлее), wet — едва заметный влажный блеск.
+// След на «стекле». mask — где стекло мутное (за ним всё размыто и светлее). Без капель и блеска — следы, а не слюни.
 // Отпечаток носа: жирное пятно с рваным краем, внутри — «булыжная» фактура мочки, ноздри — мутнее всего.
 function drawPrint(mask: CanvasRenderingContext2D, wet: CanvasRenderingContext2D, cx: number, cy: number, r: number, seed: number) {
   const rnd = rng(seed);
@@ -44,73 +44,25 @@ function drawPrint(mask: CanvasRenderingContext2D, wet: CanvasRenderingContext2D
   for (const side of [-1, 1]) {
     for (let i = 0; i < 6; i++) blob(cx + side * r * (0.32 + rnd() * 0.08), cy + r * (0.02 + rnd() * 0.1), r * (0.1 + rnd() * 0.06), 0.55);
   }
-  // мелкие брызги вокруг — капли с крошечным бликом
-  for (let i = 0; i < 26; i++) {
-    const a = rnd() * Math.PI * 2, d = r * (0.8 + rnd() * 0.7);
-    const x = cx + Math.cos(a) * d * 1.15, y = cy + Math.sin(a) * d * 0.9;
-    const rr = 1 + rnd() * rnd() * r * 0.035;
-    mask.fillStyle = "rgba(0,0,0,0.85)";
-    mask.beginPath();
-    mask.arc(x, y, rr, 0, Math.PI * 2);
-    mask.fill();
-    wet.fillStyle = "rgba(255,255,255,0.28)";
-    wet.beginPath();
-    wet.arc(x - rr * 0.3, y - rr * 0.3, Math.max(0.6, rr * 0.3), 0, Math.PI * 2);
-    wet.fill();
-  }
-  // влажный блеск по верхнему краю пятна
-  const g = wet.createRadialGradient(cx - r * 0.3, cy - r * 0.45, 0, cx - r * 0.3, cy - r * 0.45, r * 0.9);
-  g.addColorStop(0, "rgba(255,255,255,0.10)");
-  g.addColorStop(1, "rgba(255,255,255,0)");
-  wet.fillStyle = g;
-  wet.beginPath();
-  wet.ellipse(cx, cy, r * 1.2, r * 0.85, 0, 0, Math.PI * 2);
-  wet.fill();
 }
 
-// Мазок языка: широкая мутная полоса снизу вверх с продольными прожилками и парой стекающих капель
+// Отпечаток языка: широкая мутная полоса снизу вверх (сухой след, без капель)
 function drawLick(mask: CanvasRenderingContext2D, wet: CanvasRenderingContext2D, cx: number, cy: number, r: number, seed: number) {
   const rnd = rng(seed);
   const N = 26;
   const path = Array.from({ length: N }, (_, i) => {
     const t = i / (N - 1);
-    return { x: cx + Math.sin(t * 1.8 + 0.3) * r * 0.3, y: cy + r * 1.7 - t * r * 2.6, w: r * (0.62 - Math.pow(Math.abs(t - 0.4), 1.4) * 0.75) };
+    return { x: cx + Math.sin(t * 1.8 + 0.3) * r * 0.3 + (rnd() - 0.5) * r * 0.06, y: cy + r * 1.7 - t * r * 2.6, w: r * (0.62 - Math.pow(Math.abs(t - 0.4), 1.4) * 0.75) };
   });
   for (const { x, y, w } of path) {
     const g = mask.createRadialGradient(x, y, 0, x, y, w);
-    g.addColorStop(0, "rgba(0,0,0,0.42)");
-    g.addColorStop(0.75, "rgba(0,0,0,0.3)");
+    g.addColorStop(0, "rgba(0,0,0,0.3)");
+    g.addColorStop(0.75, "rgba(0,0,0,0.2)");
     g.addColorStop(1, "rgba(0,0,0,0)");
     mask.fillStyle = g;
     mask.beginPath();
     mask.arc(x, y, w, 0, Math.PI * 2);
     mask.fill();
-  }
-  // прожилки по ходу языка
-  for (let k = 0; k < 9; k++) {
-    const off = (rnd() - 0.5) * 1.4;
-    mask.strokeStyle = `rgba(0,0,0,${0.25 + rnd() * 0.3})`;
-    mask.lineWidth = 1 + rnd() * 2.5;
-    mask.beginPath();
-    path.forEach(({ x, y, w }, i) => (i ? mask.lineTo(x + off * w * 0.6, y) : mask.moveTo(x + off * w * 0.6, y)));
-    mask.stroke();
-  }
-  // стекающие капли
-  for (let i = 0; i < 3; i++) {
-    const p = path[3 + Math.floor(rnd() * 5)];
-    const x = p.x + (rnd() - 0.5) * p.w, len = r * (0.25 + rnd() * 0.45);
-    const g = mask.createLinearGradient(0, p.y, 0, p.y + len);
-    g.addColorStop(0, "rgba(0,0,0,0.6)");
-    g.addColorStop(1, "rgba(0,0,0,0.25)");
-    mask.fillStyle = g;
-    mask.fillRect(x - 1.6, p.y, 3.2, len);
-    mask.beginPath();
-    mask.arc(x, p.y + len, 3.4, 0, Math.PI * 2);
-    mask.fill();
-    wet.fillStyle = "rgba(255,255,255,0.3)";
-    wet.beginPath();
-    wet.arc(x - 1, p.y + len - 1, 1.3, 0, Math.PI * 2);
-    wet.fill();
   }
 }
 
