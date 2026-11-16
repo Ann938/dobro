@@ -50,6 +50,12 @@ export function PetCard({ p, onMeet }: { p: Pet; onMeet: (p: Pet) => void }) {
     <button type="button" className={s.card} onClick={() => onMeet(p)} aria-label={`Познакомиться: ${p.name}, ${p.age}`}>
       <span className={s.photo}>
         <img src={img(p.id)} alt="" loading="lazy" style={{ objectPosition: p.pos }} />
+        {/* черты характера — ярлыками на фото, карточка не растёт в высоту */}
+        <span className={s.tags}>
+          {p.tags.slice(0, 2).map((t) => (
+            <i key={t}>{t}</i>
+          ))}
+        </span>
         <span className={s.meet}>
           Познакомиться <Arrow />
         </span>
@@ -59,11 +65,6 @@ export function PetCard({ p, onMeet }: { p: Pet; onMeet: (p: Pet) => void }) {
         <span className={s.meta}>
           {p.age} · {p.sex}
         </span>
-      </span>
-      <span className={s.tags}>
-        {p.tags.slice(0, 2).map((t) => (
-          <i key={t}>{t}</i>
-        ))}
       </span>
       <span className={s.line}>{p.line}</span>
     </button>

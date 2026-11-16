@@ -75,6 +75,8 @@ export default function Hero() {
   const root = useRef<HTMLElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLAnchorElement>(null);
   const glass = useRef<HTMLDivElement>(null);
   const wetC = useRef<HTMLCanvasElement>(null);
   const fog = useRef<HTMLDivElement>(null);
@@ -91,11 +93,19 @@ export default function Hero() {
     const mask = document.createElement("canvas");
     const layout = () => {
       const r = hero.getBoundingClientRect();
-      geo.H = desk() ? r.height : r.height * 0.56;
+      if (desk()) {
+        geo.H = r.height;
+        geo.top = 0;
+      } else {
+        // МВ: заголовок → видео → кнопка; видео занимает всё место между текстом и кнопкой
+        const tb = textRef.current!.getBoundingClientRect().bottom - r.top;
+        const cb = ctaRef.current!.getBoundingClientRect().top - r.top;
+        geo.top = tb + 4;
+        geo.H = Math.max(200, cb - tb - 8);
+      }
       geo.W = (geo.H * 16) / 9;
       const cx = desk() ? r.width * 0.62 : r.width * 0.5;
       geo.left = cx - geo.W / 2;
-      geo.top = r.height - geo.H;
       geo.nx = geo.left + geo.W * NOSE.x;
       geo.ny = geo.top + geo.H * NOSE.y;
       Object.assign(boxEl.style, { width: `${geo.W}px`, height: `${geo.H}px`, left: `${geo.left}px`, top: `${geo.top}px` });
@@ -107,15 +117,22 @@ export default function Hero() {
       }
     };
     layout();
+    document.fonts?.ready.then(() => !dead && layout()); // высота текста на МВ меняется после загрузки шрифтов
     window.addEventListener("resize", layout);
 
     // ---- «стекло» ----
     const mctx = mask.getContext("2d")!, wctx = wc.getContext("2d")!;
-    const applyMask = () => {
-      const url = `url(${mask.toDataURL()})`;
-      glassEl.style.maskImage = url;
-      glassEl.style.setProperty("-webkit-mask-image", url);
-    };
+    // маску кодируем асинхронно (toBlob), чтобы не тормозить видео и страницу в момент касания
+    let maskUrl = "";
+    const applyMask = () =>
+      mask.toBlob((b) => {
+        if (!b || dead) return;
+        const prev = maskUrl;
+        maskUrl = URL.createObjectURL(b);
+        glassEl.style.maskImage = `url(${maskUrl})`;
+        glassEl.style.setProperty("-webkit-mask-image", `url(${maskUrl})`);
+        if (prev) setTimeout(() => URL.revokeObjectURL(prev), 500);
+      });
     const R = () => (geo.W * 0.05) / 2; // размер отпечатка носа (в половинном разрешении)
     let seed = 7;
     const clear = () => {
@@ -127,7 +144,6 @@ export default function Hero() {
       drawPrint(mctx, wctx, geo.nx / 2, geo.ny / 2, R(), seed++);
       applyMask();
       gsap.set([glassEl, wc], { opacity: 1 });
-      gsap.fromTo(hero, { x: 0 }, { x: 2, duration: 0.05, repeat: 3, yoyo: true, clearProps: "x" });
     };
     const lick = () => {
       drawLick(mctx, wctx, geo.nx / 2 + ((seed % 3) - 1) * R() * 0.25, geo.ny / 2 + R() * 0.6, R() * 1.1, seed++);
@@ -207,7 +223,7 @@ export default function Hero() {
         <video ref={video} className={s.video} src={`${BASE}/pup/pup.mp4`} poster={`${BASE}/pup/poster.jpg`} muted loop playsInline preload="auto" />
       </div>
 
-      <div className={s.text}>
+      <div className={s.text} ref={textRef}>
         <p className={s.label}>Приют «Добро» · Москва</p>
         <h1 className={s.h1}>
           Найдите друга, который <em>уже ждёт</em>
@@ -222,6 +238,11 @@ export default function Hero() {
           </a>
         </div>
       </div>
+
+      {/* на МВ кнопка — под видео */}
+      <a href="#friends" className={`${s.btn} ${s.mvCta}`} ref={ctaRef}>
+        Найти друга
+      </a>
 
       {/* «стекло» экрана: след носа, мазки языка и запотевание поверх всего */}
       <div className={s.glass} ref={glass} aria-hidden />

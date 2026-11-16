@@ -126,9 +126,22 @@
   display: flex;
   gap: u(12);
   margin-top: u(38);
-  @include mobile { margin-top: u(18); justify-content: center; }
+  @include mobile { display: none; }
 }
 .btn { @include btn(60); }
+// кнопка под видео — только на МВ
+.mvCta {
+  display: none;
+  @include mobile {
+    display: inline-flex;
+    position: absolute;
+    z-index: 3;
+    left: 50%;
+    bottom: u(20);
+    translate: -50% 0;
+    width: u(358);
+  }
+}
 .ghost { @include btn-ghost(60); padding-inline: u(28); font-size: u(15); @include mobile { display: none; } }
 
 // ---- «стекло» экрана ----
