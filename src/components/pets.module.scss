@@ -84,7 +84,7 @@
 .cardHead {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  justify-content: flex-start; // возраст и пол — сразу после имени
   gap: u(10);
   margin-top: u(16);
   @include mobile { flex-direction: column; gap: u(2); margin-top: u(10); }
