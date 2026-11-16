@@ -94,9 +94,14 @@
   @include display;
   font-size: u(26);
   letter-spacing: u(-0.5);
-  @include mobile { font-size: u(20); }
+  @include mobile { font-size: u(18); letter-spacing: u(-0.3); }
 }
-.meta { font-size: u(14); color: var(--muted); white-space: nowrap; @include mobile { font-size: u(13); } }
+.meta { font-size: u(14); color: var(--muted); white-space: nowrap; @include mobile { font-size: u(12); } }
+.sexIcon { display: none; }
+@include mobile {
+  .sexWord { display: none; }
+  .sexIcon { display: inline; margin-left: u(4); font-weight: 700; color: var(--accent); }
+}
 .tags {
   position: absolute;
   top: u(12);
