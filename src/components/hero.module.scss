@@ -7,10 +7,11 @@
   height: 100svh;
   min-height: u(640);
   overflow: hidden;
-  background: radial-gradient(60% 70% at 70% 62%, var(--cream) 0%, transparent 70%), var(--bg);
+  // цвет фона — как у студийного фона в ролике
+  background: radial-gradient(55% 65% at 62% 50%, #efe6d5 0%, transparent 75%), var(--bg);
   @include mobile {
     min-height: u(700);
-    background: radial-gradient(90% 50% at 50% 80%, var(--cream) 0%, transparent 70%), var(--bg);
+    background: radial-gradient(90% 50% at 50% 75%, #efe6d5 0%, transparent 75%), var(--bg);
   }
 }
 
@@ -67,25 +68,18 @@
   @include mobile { margin-left: auto; height: u(40); font-size: max(14px, #{u(14)}); }
 }
 
-// ---- собака ----
+// ---- щенок: видео стоит на нижнем крае, края кадра растворяются в фоне ----
 .dog {
   position: absolute;
   z-index: 1;
-  will-change: transform, filter;
   opacity: 0;
   transition: opacity 0.8s var(--ease);
-  .hero[data-ready] & { opacity: 1; }
-}
-.flip {
-  position: absolute;
-  inset: 0;
-  // края кадра растворяются в фоне страницы
-  mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%), linear-gradient(180deg, transparent 0, #000 10%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%), linear-gradient(180deg, transparent 0, #000 8%, #000 93%, transparent 100%);
   mask-composite: intersect;
   -webkit-mask-composite: source-in;
+  .hero[data-ready] & { opacity: 1; }
 }
-.video,
-.turn {
+.video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -93,7 +87,11 @@
   object-fit: cover;
   display: block;
 }
-.turn { opacity: 0; }
+// ролик подхода сверху; когда щенок сел — под ним уже идёт цикл сидения
+.intro {
+  transition: opacity 0.35s linear;
+  .hero[data-idle] & { opacity: 0; }
+}
 
 // ---- текст ----
 .text {
@@ -166,9 +164,9 @@
   opacity: 0;
   backdrop-filter: blur(12px) brightness(1.08);
   -webkit-backdrop-filter: blur(12px) brightness(1.08);
-  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 60%);
-  mask-image: radial-gradient(circle at 50% 50%, #000 0, #000 12vmin, transparent 30vmin);
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0, #000 12vmin, transparent 30vmin);
+  background: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 22vmin);
+  mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 0, #000 9vmin, transparent 24vmin);
+  -webkit-mask-image: radial-gradient(circle at var(--fx, 50%) var(--fy, 50%), #000 0, #000 9vmin, transparent 24vmin);
 }
 
 .boop {

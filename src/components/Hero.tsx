@@ -5,12 +5,6 @@ import gsap from "gsap";
 import s from "./hero.module.scss";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
-// кадры поворота головы (scripts/bake-dog.py): 00 — в камеру, последний — профиль, взгляд влево от зрителя
-const TURN_N = 32;
-// сам поворот укладывается в первые ~20 кадров, дальше — профиль
-const TURN_USE = 20;
-// где нос в кадре собаки (доли ширины и высоты видео)
-const NOSE = { x: 0.5, y: 0.593 };
 
 type Rnd = () => number;
 const rng = (seed: number): Rnd => () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
@@ -120,68 +114,50 @@ function drawLick(mask: CanvasRenderingContext2D, wet: CanvasRenderingContext2D,
   }
 }
 
-// Первый экран: собака подходит к экрану, нюхает и лижет «стекло», садится и следит за курсором.
+// Первый экран: щенок (сгенерированное видео, research/gen) подходит к экрану, лижет «стекло» и садится.
+// След носа, запотевание и мазки языка на «стекле» рисуются поверх видео в моменты касания (время — по кадрам ролика).
+const NOSE = { x: 0.51, y: 0.47 }; // нос щенка у стекла — доли кадра
+const EV = { print: 3.9, fog: [4.15, 4.85, 6.95], lick: [5.65, 6.15, 7.65], close: [3.4, 8.4] };
+
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
-  const dog = useRef<HTMLDivElement>(null);
-  const flip = useRef<HTMLDivElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
-  const turn = useRef<HTMLCanvasElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const intro = useRef<HTMLVideoElement>(null);
+  const idle = useRef<HTMLVideoElement>(null);
   const glass = useRef<HTMLDivElement>(null);
   const wetC = useRef<HTMLCanvasElement>(null);
   const fog = useRef<HTMLDivElement>(null);
   const boopRef = useRef<() => void>(() => {});
 
   useEffect(() => {
-    const hero = root.current!, dogEl = dog.current!, flipEl = flip.current!, vid = video.current!, tc = turn.current!;
+    const hero = root.current!, boxEl = box.current!, vIn = intro.current!, vIdle = idle.current!;
     const glassEl = glass.current!, wc = wetC.current!, fogEl = fog.current!;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const desk = () => window.matchMedia("(min-width: 1024px)").matches;
     let dead = false;
 
-    // ---- раскладка: собака стоит на нижнем крае, нос — на нужной вертикали ----
-    const geo = { W: 0, H: 0, left: 0, top: 0, nx: 0, ny: 0, vw: 0, vh: 0 };
+    // ---- раскладка: кадр 16:9 стоит на нижнем крае; на ДВ щенок правее текста ----
+    const geo = { W: 0, H: 0, left: 0, top: 0, nx: 0, ny: 0 };
     const mask = document.createElement("canvas");
     const layout = () => {
       const r = hero.getBoundingClientRect();
-      geo.vw = r.width;
-      geo.vh = r.height;
-      geo.H = desk() ? r.height * 0.92 : r.height * 0.56;
+      geo.H = desk() ? r.height : r.height * 0.56;
       geo.W = (geo.H * 16) / 9;
-      const cx = desk() ? r.width * 0.7 : r.width * 0.5;
+      const cx = desk() ? r.width * 0.62 : r.width * 0.5;
       geo.left = cx - geo.W / 2;
       geo.top = r.height - geo.H;
-      geo.nx = cx;
+      geo.nx = geo.left + geo.W * NOSE.x;
       geo.ny = geo.top + geo.H * NOSE.y;
-      Object.assign(dogEl.style, { width: `${geo.W}px`, height: `${geo.H}px`, left: `${geo.left}px`, top: `${geo.top}px`, transformOrigin: `${NOSE.x * 100}% ${NOSE.y * 100}%` });
-      // холсты «стекла» — в половинном разрешении экрана
+      Object.assign(boxEl.style, { width: `${geo.W}px`, height: `${geo.H}px`, left: `${geo.left}px`, top: `${geo.top}px` });
+      fogEl.style.setProperty("--fx", `${geo.nx}px`);
+      fogEl.style.setProperty("--fy", `${geo.ny}px`);
       for (const c of [mask, wc]) {
         c.width = Math.round(r.width / 2);
         c.height = Math.round(r.height / 2);
       }
-      tc.width = 1280;
-      tc.height = 720;
     };
     layout();
     window.addEventListener("resize", layout);
-
-    // ---- поворот головы: кадры заранее ----
-    const frames: HTMLImageElement[] = [];
-    const loaded = Promise.all(
-      Array.from({ length: TURN_N }, (_, i) => {
-        const im = new Image();
-        im.src = `${BASE}/dog/turn/${String(i).padStart(2, "0")}.jpg`;
-        frames[i] = im;
-        return im.decode().catch(() => {});
-      }),
-    );
-    const tctx = tc.getContext("2d")!;
-    let drawn = -1;
-    const drawTurn = (i: number) => {
-      if (i === drawn || !frames[i]?.complete) return;
-      tctx.drawImage(frames[i], 0, 0, 1280, 720);
-      drawn = i;
-    };
 
     // ---- «стекло» ----
     const mctx = mask.getContext("2d")!, wctx = wc.getContext("2d")!;
@@ -190,118 +166,80 @@ export default function Hero() {
       glassEl.style.maskImage = url;
       glassEl.style.setProperty("-webkit-mask-image", url);
     };
+    const R = () => (geo.W * 0.05) / 2; // размер отпечатка носа (в половинном разрешении)
     let seed = 7;
-    const print = () => {
+    const clear = () => {
       mctx.clearRect(0, 0, mask.width, mask.height);
       wctx.clearRect(0, 0, wc.width, wc.height);
-      const r = Math.min(mask.width, mask.height) * (desk() ? 0.14 : 0.2);
-      drawPrint(mctx, wctx, mask.width / 2, mask.height / 2, r, seed++);
       applyMask();
+    };
+    const print = () => {
+      drawPrint(mctx, wctx, geo.nx / 2, geo.ny / 2, R(), seed++);
+      applyMask();
+      gsap.set([glassEl, wc], { opacity: 1 });
+      gsap.fromTo(hero, { x: 0 }, { x: 2, duration: 0.05, repeat: 3, yoyo: true, clearProps: "x" });
     };
     const lick = () => {
-      const r = Math.min(mask.width, mask.height) * (desk() ? 0.14 : 0.2);
-      drawLick(mctx, wctx, mask.width / 2 + r * 0.1, mask.height / 2, r, seed++);
+      drawLick(mctx, wctx, geo.nx / 2 + ((seed % 3) - 1) * R() * 0.25, geo.ny / 2 + R() * 0.6, R() * 1.1, seed++);
       applyMask();
     };
+    const breath = () => gsap.fromTo(fogEl, { opacity: 0.25 }, { opacity: 0.85, duration: 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" });
 
-    // ---- подход к экрану: k 0 — сидит, 1 — нос у стекла ----
-    const st = { k: 0, push: 0 };
-    const S = () => (desk() ? 3.4 : 2.6);
-    const place = () => {
-      const k = st.k + st.push;
-      const sc = 1 + k * (S() - 1);
-      const tx = (geo.vw / 2 - geo.nx) * Math.min(1, k), ty = (geo.vh / 2 - geo.ny) * Math.min(1, k);
-      const bob = Math.sin(st.k * Math.PI * 3) * 10 * (1 - st.k);
-      dogEl.style.transform = `translate(${tx}px, ${ty + bob}px) scale(${sc})`;
-      // вблизи нос не в фокусе — как у настоящей камеры
-      dogEl.style.filter = st.k > 0.02 ? `blur(${Math.pow(st.k, 2.5) * 9}px)` : "";
-      hero.style.setProperty("--k", st.k.toFixed(3));
-    };
-    place();
-
-    let following = false;
-    let tl: gsap.core.Timeline | null = null;
-    const boop = () => {
-      tl?.kill();
-      following = false;
-      gsap.killTweensOf([glassEl, wc, fogEl]);
-      tl = gsap.timeline();
-      tl.to(st, { k: 1, duration: 1.25, ease: "power2.in", onUpdate: place })
-        .add(() => {
-          print();
-          gsap.set([glassEl, wc], { opacity: 1 });
-          gsap.fromTo(hero, { x: 0 }, { x: 3, duration: 0.05, repeat: 3, yoyo: true, clearProps: "x" });
-        })
-        // два вдоха: стекло запотевает, нос чуть давит
-        .to(fogEl, { opacity: 0.9, duration: 0.18 }, "<")
-        .to(st, { push: -0.04, duration: 0.18, yoyo: true, repeat: 1, onUpdate: place }, "+=0.2")
-        .to(fogEl, { opacity: 0.55, duration: 0.25 }, "<")
-        .to(fogEl, { opacity: 0.95, duration: 0.15 }, ">")
-        .to(st, { push: -0.04, duration: 0.18, yoyo: true, repeat: 1, onUpdate: place }, "<")
-        // лизь
-        .add(lick, "+=0.25")
-        .to(st, { push: 0.05, duration: 0.12, yoyo: true, repeat: 1, onUpdate: place }, "<")
-        // обратно на место; запотевание тает быстро, след — медленно
-        .to(st, { k: 0, duration: 1.3, ease: "power3.out", onUpdate: place, onComplete: () => void (following = true) }, "+=0.35")
-        .to(fogEl, { opacity: 0, duration: 2.6, ease: "power1.out" }, "<")
-        .to([glassEl, wc], { opacity: 0, duration: 12, ease: "power1.in" }, "<+=2.5");
-    };
-    boopRef.current = boop;
-
-    // ---- взгляд за курсором ----
-    const look = { target: 0, cur: 0, side: 1, lastMove: 0 };
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerType !== "mouse") return;
-      const r = hero.getBoundingClientRect();
-      const dx = (e.clientX - r.left - geo.nx) / (geo.vw * 0.33);
-      look.target = Math.max(-1, Math.min(1, dx));
-      look.lastMove = performance.now();
-    };
-    window.addEventListener("pointermove", onMove);
-    const sstep = (a: number, b: number, x: number) => {
-      const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
-      return t * t * (3 - 2 * t);
-    };
-    let last = performance.now();
+    // ---- сценарий по времени ролика ----
+    let last = 0;
     let raf = 0;
-    const tick = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      let tgt = following ? look.target : 0;
-      // без мыши (телефон или курсор стоит) — изредка оглядывается сама
-      if (following && now - look.lastMove > 3500) {
-        const t = now / 1000;
-        tgt = Math.sin(t * 0.45) > 0.55 ? Math.sign(Math.sin(t * 0.19)) * 0.9 : 0;
-      }
-      const amt = sstep(0.12, 0.95, Math.abs(tgt));
-      const want = Math.sign(tgt) || look.side;
-      // сторону меняем, только когда голова вернулась к камере
-      if (want !== look.side && look.cur < 0.04) look.side = want;
-      const goal = want === look.side ? amt : 0;
-      look.cur += (goal - look.cur) * (1 - Math.exp(-dt * 7));
-      flipEl.style.transform = look.side > 0 ? "scaleX(-1)" : "";
-      const vis = sstep(0.015, 0.08, look.cur);
-      tc.style.opacity = String(vis);
-      if (vis > 0) drawTurn(Math.min(TURN_N - 1, Math.round(look.cur * TURN_USE)));
+    const tick = () => {
+      const t = vIn.currentTime;
+      if (t < last) last = 0;
+      const hit = (e: number) => last < e && t >= e;
+      if (hit(EV.print)) print();
+      EV.fog.forEach((e) => hit(e) && breath());
+      EV.lick.forEach((e) => hit(e) && lick());
+      last = t;
+      // вблизи текст чуть уходит, чтобы не спорить с мордой
+      const [a, b] = EV.close;
+      const k = Math.max(0, Math.min(1, (t - a) / 0.5, (b - t) / 0.5));
+      hero.style.setProperty("--k", (hero.hasAttribute("data-idle") ? 0 : k).toFixed(3));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
-    // старт: видео и кадры готовы (не дольше 3 с), потом собака подходит к экрану
-    const ready = Promise.race([Promise.all([loaded, new Promise((r) => (vid.readyState >= 3 ? r(0) : vid.addEventListener("canplay", r, { once: true })))]), new Promise((r) => setTimeout(r, 3000))]);
-    ready.then(() => {
+    const toIdle = () => {
+      vIdle.currentTime = 0;
+      vIdle.play().catch(() => {});
+      hero.setAttribute("data-idle", "");
+      // след на стекле медленно высыхает
+      gsap.to([glassEl, wc], { opacity: 0, duration: 12, delay: 3, ease: "power1.in" });
+    };
+    vIn.addEventListener("ended", toIdle);
+
+    const boop = () => {
+      gsap.killTweensOf([glassEl, wc]);
+      clear();
+      last = 0;
+      hero.removeAttribute("data-idle");
+      vIn.currentTime = 0;
+      vIn.play().catch(toIdle);
+    };
+    boopRef.current = boop;
+
+    // старт: как только ролик готов (при «меньше движения» щенок сразу сидит)
+    const start = () => {
       if (dead) return;
       hero.setAttribute("data-ready", "");
-      if (reduced) following = true;
-      else gsap.delayedCall(0.9, boop);
-    });
+      if (reduced) {
+        vIn.pause();
+        toIdle();
+      } else vIn.play().catch(toIdle);
+    };
+    if (vIn.readyState >= 3) start();
+    else vIn.addEventListener("canplay", start, { once: true });
 
     return () => {
       dead = true;
-      tl?.kill();
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", layout);
-      window.removeEventListener("pointermove", onMove);
+      vIn.removeEventListener("ended", toIdle);
     };
   }, []);
 
@@ -327,11 +265,9 @@ export default function Hero() {
         </a>
       </header>
 
-      <div className={s.dog} ref={dog} aria-hidden>
-        <div className={s.flip} ref={flip}>
-          <video ref={video} className={s.video} src={`${BASE}/dog/idle.mp4`} muted loop playsInline autoPlay preload="auto" />
-          <canvas ref={turn} className={s.turn} />
-        </div>
+      <div className={s.dog} ref={box} aria-hidden>
+        <video ref={idle} className={s.video} src={`${BASE}/pup/idle.mp4`} muted loop playsInline preload="auto" />
+        <video ref={intro} className={`${s.video} ${s.intro}`} src={`${BASE}/pup/intro.mp4`} poster={`${BASE}/pup/poster.jpg`} muted playsInline preload="auto" />
       </div>
 
       <div className={s.text}>
@@ -350,7 +286,7 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* «стекло» экрана: след носа и запотевание поверх всего */}
+      {/* «стекло» экрана: след носа, мазки языка и запотевание поверх всего */}
       <div className={s.glass} ref={glass} aria-hidden />
       <canvas className={s.wet} ref={wetC} aria-hidden />
       <div className={s.fog} ref={fog} aria-hidden />

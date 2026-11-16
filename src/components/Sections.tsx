@@ -349,7 +349,7 @@ export function Footer() {
       </div>
       <p className={s.note}>{footer.note}</p>
       <details className={s.credits}>
-        <summary>Фото: Wikimedia Commons, видео: Mixkit — авторы и лицензии</summary>
+        <summary>Фото: Wikimedia Commons — авторы и лицензии</summary>
         <ul>
           {credits.map((c) => (
             <li key={c.id}>
@@ -359,7 +359,6 @@ export function Footer() {
               — {c.license}
             </li>
           ))}
-          <li>Видео собаки: Mixkit, клип 1552 (Mixkit Free License)</li>
         </ul>
       </details>
     </footer>
