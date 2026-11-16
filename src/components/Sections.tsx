@@ -210,7 +210,6 @@ function MeetSheet({ pet, onClose }: { pet: Pet; onClose: () => void }) {
             </div>
           ) : (
             <form onSubmit={submit} noValidate>
-              <p className={s.label}>Знакомство</p>
               <h3 className={s.h3}>
                 {pet.name}, {pet.age}
               </h3>
