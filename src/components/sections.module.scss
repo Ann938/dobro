@@ -152,10 +152,10 @@
   display: flex;
   gap: u(12);
   align-items: flex-start;
-  margin-top: u(20);
+  margin-top: u(14);
   padding: u(14) u(16);
   border-radius: u(16);
-  background: var(--bg);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   font-size: u(14);
   line-height: 1.45;
   b { white-space: nowrap; }

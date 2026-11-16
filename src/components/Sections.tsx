@@ -116,7 +116,7 @@ function Calendar({ value, onChange, min }: { value: Date; onChange: (d: Date) =
               const d = new Date(monday(w));
               d.setDate(d.getDate() + i);
               const we = i > 4;
-              const off = d < min || we;
+              const off = d < min; // выходные тоже выбираются — на них без записи
               const on = d.getTime() === value.getTime();
               return (
                 <button
@@ -174,7 +174,8 @@ function MeetSheet({ pet, onClose }: { pet: Pet; onClose: () => void }) {
     };
   }, [pet, onClose]);
   const pick = (d: Date) => (setDate(d), setSlot(Math.max(0, firstFree(d))));
-  const when = `${date.getDate()} ${MONTHS_GEN[date.getMonth()]}, ${SLOTS[slot]}`;
+  const we = isWeekend(date);
+  const dayStr = `${date.getDate()} ${MONTHS_GEN[date.getMonth()]}`;
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -197,7 +198,11 @@ function MeetSheet({ pet, onClose }: { pet: Pet; onClose: () => void }) {
               <Paw className={s.donePaw} />
               <h3 className={s.h3}>{pet.name} ждёт вас</h3>
               <p>
-                {nb(`${date.getDate()} ${MONTHS_GEN[date.getMonth()]} в ${SLOTS[slot]}. Волонтёр позвонит накануне и напомнит, как добраться. Возьмите паспорт — и, если хотите, вкусняшку.`)}
+                {nb(
+                  we
+                    ? `${dayStr}, в любое время с 11:00 до 17:00 — запись не нужна. Мы предупредим волонтёров, что вы приедете знакомиться. Возьмите паспорт — и, если хотите, вкусняшку.`
+                    : `${dayStr} в ${SLOTS[slot]}. Волонтёр позвонит накануне и напомнит, как добраться. Возьмите паспорт — и, если хотите, вкусняшку.`,
+                )}
               </p>
               <button type="button" className={s.btn} onClick={onClose}>
                 Хорошо
@@ -210,22 +215,27 @@ function MeetSheet({ pet, onClose }: { pet: Pet; onClose: () => void }) {
                 {pet.name}, {pet.age}
               </h3>
               <p className={s.sheetLine}>{pet.line}</p>
-              <p className={s.walkin}>
-                <Paw className={s.walkinPaw} />
-                <span>
-                  В выходные приезжайте без записи: <b>сб–вс, 11:00–17:00</b>. На будни — выберите день и время.
-                </span>
-              </p>
-              <p className={s.fieldLabel}>День в будни</p>
+              <p className={s.fieldLabel}>Выберите день</p>
               <Calendar value={date} onChange={pick} min={min} />
-              <p className={s.fieldLabel}>Время</p>
-              <div className={s.days} role="radiogroup" aria-label="Время визита">
-                {SLOTS.map((sl, i) => (
-                  <button key={sl} type="button" role="radio" aria-checked={slot === i} disabled={taken(date, i)} onClick={() => setSlot(i)}>
-                    {sl}
-                  </button>
-                ))}
-              </div>
+              {we ? (
+                <p className={s.walkin}>
+                  <Paw className={s.walkinPaw} />
+                  <span>
+                    <b>Без записи · 11:00–17:00.</b> Просто приезжайте в удобное время.
+                  </span>
+                </p>
+              ) : (
+                <>
+                  <p className={s.fieldLabel}>Время</p>
+                  <div className={s.days} role="radiogroup" aria-label="Время визита">
+                    {SLOTS.map((sl, i) => (
+                      <button key={sl} type="button" role="radio" aria-checked={slot === i} disabled={taken(date, i)} onClick={() => setSlot(i)}>
+                        {sl}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
               <label className={s.field} data-error={err === "name" || undefined}>
                 <span>Как вас зовут</span>
                 <input name="name" autoComplete="name" />
@@ -237,7 +247,7 @@ function MeetSheet({ pet, onClose }: { pet: Pet; onClose: () => void }) {
                 {err === "phone" && <em>Нужен номер из 10–11 цифр</em>}
               </label>
               <button type="submit" className={s.btn}>
-                Записаться на {when}
+                {we ? `Приеду ${dayStr}` : `Записаться на ${dayStr}, ${SLOTS[slot]}`}
                 <Arrow />
               </button>
             </form>
