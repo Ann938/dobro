@@ -2,7 +2,6 @@
 
 // Первый экран: собака на ровном фоне сайта, текст слева, «стекло» экрана поверх всего.
 .hero {
-  --k: 0;
   position: relative;
   height: 100svh;
   min-height: u(640);
@@ -96,7 +95,6 @@
   top: 50%;
   translate: 0 -46%;
   width: u(560);
-  opacity: calc(1 - var(--k) * 0.55);
   @include mobile {
     left: 50%;
     top: u(88);

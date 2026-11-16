@@ -71,7 +71,7 @@ function drawLick(mask: CanvasRenderingContext2D, wet: CanvasRenderingContext2D,
 // Первый экран: щенок (сгенерированное видео, research/gen2) подходит к экрану, лижет «стекло» и садится; ролик по кругу.
 // След носа, запотевание и мазки языка на «стекле» рисуются поверх видео в моменты касания (время — по кадрам ролика).
 const NOSE = { x: 0.5, y: 0.5 }; // нос щенка у стекла — доли кадра
-const EV = { print: 3.9, fog: [4.4, 5.2, 6.0], lick: [6.2, 6.95, 8.2], dry: 10.2, close: [3.3, 9.0] };
+const EV = { print: 3.9, fog: [4.4, 5.2, 6.0], lick: [6.2, 6.95, 8.2], dry: 10.2 };
 
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
@@ -172,10 +172,6 @@ export default function Hero() {
       // щенок отошёл — след на стекле высыхает до конца круга
       if (hit(EV.dry)) gsap.to([glassEl, wc], { opacity: 0, duration: 3.5, ease: "power1.in" });
       last = t;
-      // вблизи текст чуть уходит, чтобы не спорить с мордой
-      const [a, b] = EV.close;
-      const k = Math.max(0, Math.min(1, (t - a) / 0.5, (b - t) / 0.5));
-      hero.style.setProperty("--k", k.toFixed(3));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
