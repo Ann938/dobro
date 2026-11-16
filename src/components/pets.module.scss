@@ -87,7 +87,8 @@
   justify-content: flex-start; // возраст и пол — сразу после имени
   gap: u(10);
   margin-top: u(16);
-  @include mobile { flex-direction: column; gap: u(2); margin-top: u(10); }
+  // на МВ тоже в строку; если не влезает — возраст переносится под имя
+  @include mobile { flex-wrap: wrap; gap: u(2) u(6); margin-top: u(10); }
 }
 .name {
   @include display;
