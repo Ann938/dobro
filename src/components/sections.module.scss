@@ -377,35 +377,20 @@
 }
 
 // ---------- Было → стало ----------
+.storiesHead {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: u(24);
+  @include mobile { flex-direction: column; align-items: start; gap: u(16); }
+}
 .storyList {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: u(24);
-  margin-top: u(56);
-  li {
-    display: grid;
-    border-radius: u(32);
-    overflow: hidden;
-    background: var(--cream);
-    &:nth-child(2) { margin-top: u(48); }
-  }
-  img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
-  div { padding: u(26) u(28) u(30); }
-  @include mobile {
-    grid-template-columns: minmax(0, 1fr);
-    margin-top: u(32);
-    li:nth-child(2) { margin-top: 0; }
-    div { padding: u(18) u(16) u(22); }
-  }
+  margin-top: u(48);
+  @include mobile { grid-template-columns: minmax(0, 1fr); gap: u(16); margin-top: u(28); }
 }
-.before {
-  margin-top: u(12);
-  font-size: u(14);
-  color: var(--muted);
-  text-decoration: line-through;
-  text-decoration-color: color-mix(in srgb, var(--accent) 70%, transparent);
-}
-.after { margin-top: u(6); font-weight: 600; font-size: u(17); line-height: 1.4; @include mobile { font-size: u(15); } }
 
 // ---------- Вопросы ----------
 .faq {

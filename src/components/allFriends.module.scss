@@ -1,23 +1,5 @@
 @use "styles/core" as *;
 
-.header {
-  @include container;
-  height: u(84);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  @include mobile { height: u(64); }
-}
-.logo {
-  display: inline-flex;
-  align-items: center;
-  gap: u(10);
-  @include display;
-  font-size: u(28);
-  svg { width: u(34); height: u(34); }
-  @include mobile { font-size: u(24); }
-}
-.back { @include btn-ghost(46); @include mobile { height: u(40); font-size: max(14px, #{u(14)}); } }
 .main { @include container; padding-top: u(56); @include mobile { padding-top: u(24); } }
 .label { @include type-label; color: var(--accent); margin-bottom: u(20); }
 .h1 {

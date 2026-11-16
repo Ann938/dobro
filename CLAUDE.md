@@ -7,6 +7,7 @@
 - Next 16 + SCSS-модули, `u()` из `src/styles/_core.scss` (ДВ 1440 / контент 1280; МВ ≤1023 — колонка 358).
   Шрифты: Lora (заголовки, курсив — акценты) + Golos Text. Палитра в `globals.scss`: песок #f1e4d3, коричневый #2b1a12, морковный #f0612e.
 - Первый экран `Hero.tsx`: сгенерированное пользователем видео щенка (research/gen/lick.mp4, не в git) на бежевом студийном фоне —
+  капли «слюней» на стекле вырезаны из кадров (research/gen/dedrool2.py, путь капель по ключевым кадрам) →
   `public/pup/intro.mp4` (0–10.6 с: подходит, лижет «стекло», садится) + `idle.mp4` (10.6 с–конец туда-обратно, сидит).
   Фон сайта `--bg #ebe1ce` подобран под фон ролика, края видео растворены маской. Поверх — «стекло»: след носа, мазки языка
   и запотевание в моменты касания (время событий — `EV` в Hero.tsx, нос — `NOSE`). Слежение за курсором — ждём второй ролик
@@ -17,5 +18,9 @@
   (`scripts/gen-pets.py`: фото из research/sel.json, имена/характеры генерируются, кадрирование — по маске rembg).
   Страница «Все друзья» — `/friends` (`AllFriends.tsx`, `Catalog` в `Pets.tsx`): вкладки вида (Все/Собаки/Кошки),
   галочки «Ладит с детьми», «Для квартиры», свой выпадающий список возраста, «Показать ещё» по 24. Сетка ровная.
-- Проверка: `npx next dev -p 3600`; `node scripts/shot-hero.mjs <out> [w h]`, `node scripts/shot-page.mjs <out> [w h]`, `node scripts/shot-friends.mjs <out> [w h]` (нужен PW_CHROME).
+- Истории «было → стало»: 6 штук в `stories` (content.ts), на главной 3 карточки-ссылки (`StoryCard.tsx`),
+  `/stories` — все, `/stories/<id>` — полная история (`StoryViews.tsx`, главы, цитата, факты, следующая история, призыв).
+  В режиме cacheComponents у динамической страницы `instant = false` (а `dynamicParams` запрещён).
+- Шапка внутренних страниц — `PageHeader.tsx`.
+- Проверка: `npx next dev -p 3600`; `node scripts/shot-hero.mjs <out> [w h]`, `node scripts/shot-page.mjs <out> [w h]`, `node scripts/shot-friends.mjs <out> [w h]`, `node scripts/shot-stories.mjs <out> [w h]` (нужен PW_CHROME).
 - Публикация (только с согласия): `npm run deploy` → ann938.github.io/dobro (репо ещё не создан).

@@ -7,6 +7,7 @@ import { adopt, faq, footer, featured, friends, help, stories, type Pet } from "
 import { allPets } from "@/pets";
 import { Arrow, KindTabs, Paw, PetCard, img, type KindId } from "./Pets";
 import credits from "@/credits.json";
+import { StoryCard } from "./StoryCard";
 import s from "./sections.module.scss";
 
 if (typeof window !== "undefined") gsap.registerPlugin(ScrollTrigger);
@@ -277,25 +278,27 @@ export function Help() {
   );
 }
 
-// ---------- Было → стало ----------
+// ---------- Было → стало (главная: три истории, каждая — ссылка на свою страницу) ----------
 export function Stories() {
   return (
     <section className={s.stories}>
-      <p className={s.label} data-reveal>
-        {stories.label}
-      </p>
-      <h2 className={s.h2} data-reveal style={{ ["--d" as string]: 1 }}>
-        {stories.title}
-      </h2>
+      <div className={s.storiesHead}>
+        <div>
+          <p className={s.label} data-reveal>
+            {stories.label}
+          </p>
+          <h2 className={s.h2} data-reveal style={{ ["--d" as string]: 1 }}>
+            {stories.title}
+          </h2>
+        </div>
+        <a href={`${BASE}/stories/`} className={s.link} data-reveal style={{ ["--d" as string]: 2 }}>
+          {stories.all} {stories.items.length} <Arrow />
+        </a>
+      </div>
       <ul className={s.storyList}>
-        {stories.items.map((it, i) => (
-          <li key={it.id} data-reveal style={{ ["--d" as string]: i }}>
-            <img src={img(it.id)} alt="" loading="lazy" style={{ objectPosition: it.pos }} />
-            <div>
-              <h3 className={s.h3}>{it.name}</h3>
-              <p className={s.before}>{it.before}</p>
-              <p className={s.after}>{it.after}</p>
-            </div>
+        {stories.items.slice(0, 3).map((st, i) => (
+          <li key={st.id} data-reveal style={{ ["--d" as string]: i }}>
+            <StoryCard st={st} />
           </li>
         ))}
       </ul>

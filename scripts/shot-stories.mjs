@@ -1,0 +1,20 @@
+// Скриншоты историй: блок на главной, страница всех историй, одна история (целиком): node scripts/shot-stories.mjs <out> [w h]
+import { chromium } from "playwright";
+const [out, w, h] = [process.argv[2], +(process.argv[3] || 1440), +(process.argv[4] || 900)];
+const b = await chromium.launch({ executablePath: process.env.PW_CHROME });
+const p = await b.newPage({ viewport: { width: w, height: h }, ...(w < 800 ? { isMobile: true, hasTouch: true, deviceScaleFactor: 2 } : {}) });
+const errs = []; p.on("pageerror", (e) => errs.push(String(e))); p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
+await p.goto("http://localhost:3600/", { waitUntil: "networkidle" });
+await p.evaluate(() => { const e = [...document.querySelectorAll("section")].find((x) => x.textContent.includes("Истории, ради")); window.scrollTo(0, e.getBoundingClientRect().top + scrollY - 40); });
+await p.waitForTimeout(1800);
+await p.screenshot({ path: `${out}-home.jpg`, type: "jpeg", quality: 80 });
+await p.click('a[href$="/stories/lada/"]');
+await p.waitForURL(/stories\/lada/);
+await p.waitForTimeout(1500);
+await p.screenshot({ path: `${out}-lada.jpg`, type: "jpeg", quality: 80, fullPage: true });
+await p.goto("http://localhost:3600/stories/", { waitUntil: "networkidle" });
+await p.waitForTimeout(1200);
+await p.screenshot({ path: `${out}-all.jpg`, type: "jpeg", quality: 80, fullPage: true });
+const sw = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+console.log("hscroll", sw, errs);
+await b.close();
