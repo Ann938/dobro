@@ -59,7 +59,9 @@
   grid-auto-flow: column;
   grid-auto-columns: u(360);
   column-gap: u(24);
-  margin-top: u(48);
+  // сверху запас под лапку: лента прокручивается и обрезает всё, что выходит за её край
+  margin-top: u(8);
+  padding-top: u(40);
   // поле до края экрана (scroll-padding в % считался бы от ширины ленты, поэтому — через переменную)
   --bleed: calc(50vw - #{u($content * 0.5)});
   @include mobile { --bleed: calc(50vw - #{u($m-content * 0.5)}); }
@@ -77,20 +79,19 @@
 
 // ---- карточка статьи ----
 .card {
+  --r: #{u(28)};
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: u(28);
-  overflow: hidden;
-  background: var(--cream);
-  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
+  border-radius: var(--r);
+  // фон карточки — слоем над лапкой, как у кнопок: лапка прячется за карточкой и выглядывает сверху
+  &::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: var(--cream); }
+  @include paw-logo(u(-40), calc(100% - #{u(104)}), u(60), translateY(u(40)), 12deg, -14deg);
   &:focus-visible { outline: u(2) solid var(--ink); outline-offset: u(4); }
   @media (hover: hover) {
-    &:hover {
-      transform: translateY(u(-6));
-      box-shadow: 0 u(24) u(50) color-mix(in srgb, var(--ink) 14%, transparent);
-      .cardPhoto img { transform: scale(1.05); }
-    }
+    &:hover .cardPhoto img { transform: scale(1.04); }
   }
 }
 .cardPhoto {
@@ -98,6 +99,7 @@
   display: block;
   aspect-ratio: 4 / 3;
   overflow: hidden;
+  border-radius: var(--r) var(--r) 0 0;
   img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease); }
 }
 .tag {
@@ -125,7 +127,7 @@
   @include desktop {
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    .cardPhoto { aspect-ratio: auto; height: 100%; min-height: u(420); }
+    .cardPhoto { aspect-ratio: auto; height: 100%; min-height: u(420); border-radius: var(--r) 0 0 var(--r); }
     .cardBody { align-content: center; padding: u(48); gap: u(16); }
     .cardTitle { @include type-h2; font-size: u(44); letter-spacing: u(-1); }
     .cardLead { @include type-lead; color: var(--muted); -webkit-line-clamp: 4; }
@@ -134,14 +136,17 @@
 
 // последняя карточка ленты — ссылка на все статьи
 .allCard {
+  position: relative;
+  isolation: isolate;
   display: grid;
   align-content: space-between;
   height: 100%;
   min-height: u(360);
   padding: u(28);
   border-radius: u(28);
-  background: var(--ink);
   color: var(--cream);
+  &::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: var(--ink); }
+  @include paw-logo(u(-40), calc(100% - #{u(104)}), u(60), translateY(u(40)), 12deg, -14deg);
   span { @include type-label; color: var(--accent); }
   b { @include display; font-size: u(30); line-height: 1.1; letter-spacing: u(-0.5); font-weight: 600; }
   i {
@@ -256,8 +261,8 @@
   .head { flex-direction: column; align-items: start; gap: u(16); }
   .headSide { width: 100%; justify-content: space-between; }
   .arrows { display: none; }
-  .rail { grid-auto-columns: u(290); column-gap: u(12); margin-top: u(24); }
-  .card { border-radius: u(22); }
+  .rail { grid-auto-columns: u(290); column-gap: u(12); margin-top: u(24); padding-top: 0; }
+  .card { --r: #{u(22)}; }
   .cardBody { padding: u(16) u(16) u(20); gap: u(8); }
   .allCard { min-height: u(300); padding: u(20); border-radius: u(22); b { font-size: u(24); } }
   .feature { grid-template-columns: minmax(0, 1fr); gap: u(24); margin-top: u(40); padding-top: u(40); }
