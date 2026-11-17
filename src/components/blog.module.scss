@@ -4,16 +4,6 @@
 .h2 { @include type-h2; max-width: u(820); text-wrap: balance; }
 .h3 { @include type-h3; }
 .btn { @include btn(60); }
-.link {
-  display: inline-flex;
-  align-items: center;
-  gap: u(8);
-  font-weight: 600;
-  border-bottom: u(1.5) solid currentColor;
-  padding-bottom: u(3);
-  svg { transition: transform 0.3s var(--ease); }
-  @media (hover: hover) { &:hover svg { transform: translateX(u(4)); } }
-}
 .meta { display: flex; flex-wrap: wrap; align-items: center; gap: u(10); font-size: u(13); color: var(--muted); }
 .tagInline {
   @include type-label;
@@ -27,55 +17,13 @@
   padding-top: u(150);
   @include mobile { padding-top: u(90); }
 }
-.head {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: u(24);
-}
-.headSide { display: flex; align-items: center; gap: u(28); flex: none; }
-.arrows {
-  display: flex;
-  gap: u(10);
-  button {
-    display: grid;
-    place-items: center;
-    width: u(52);
-    height: u(52);
-    border-radius: 50%;
-    border: u(1.5) solid var(--line);
-    color: var(--ink);
-    transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease), opacity 0.3s;
-    &:first-child svg { transform: scaleX(-1); }
-    &:disabled { opacity: 0.35; cursor: default; }
-    @media (hover: hover) { &:not(:disabled):hover { background: var(--ink); border-color: var(--ink); color: var(--cream); } }
-    &:focus-visible { outline: u(2) solid var(--ink); outline-offset: u(3); }
-  }
-}
-
-// лента выходит за поля до края экрана: видно, что её можно листать
-.rail {
+.three {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: u(360);
-  column-gap: u(24);
-  // запас сверху и снизу: лента прокручивается и обрезает подъём и тень карточки при наведении
-  margin-top: u(36);
-  padding-top: u(12);
-  // поле до края экрана (scroll-padding в % считался бы от ширины ленты, поэтому — через переменную)
-  --bleed: calc(50vw - #{u($content * 0.5)});
-  @include mobile { --bleed: calc(50vw - #{u($m-content * 0.5)}); }
-  margin-inline: calc(var(--bleed) * -1);
-  padding-inline: var(--bleed);
-  scroll-padding-inline: var(--bleed);
-  padding-bottom: u(48);
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
-  > li { scroll-snap-align: start; }
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: u(24);
+  margin-top: u(48);
 }
+.allWrap { display: flex; justify-content: center; margin-top: u(48); }
 
 // ---- карточка статьи ----
 .card {
@@ -153,40 +101,13 @@
   }
 }
 
-// последняя карточка ленты — ссылка на все статьи
-.allCard {
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  align-content: space-between;
-  height: 100%;
-  min-height: u(360);
-  padding: u(28);
-  border-radius: u(28);
-  color: var(--cream);
-  background: var(--ink);
-  span { @include type-label; color: var(--accent); }
-  b { @include display; font-size: u(30); line-height: 1.1; letter-spacing: u(-0.5); font-weight: 600; }
-  i {
-    display: grid;
-    place-items: center;
-    width: u(56);
-    height: u(56);
-    border-radius: 50%;
-    background: var(--accent);
-    transition: transform 0.4s var(--ease);
-  }
-  @media (hover: hover) { &:hover i { transform: translateX(u(8)); } }
-  &:focus-visible { outline: u(2) solid var(--ink); outline-offset: u(4); }
-}
-
 // ---- статья на главной: текст слева, фото справа ----
 .feature {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: u(64);
   align-items: center;
-  margin-top: u(48);
+  margin-top: u(110);
   padding-top: u(80);
   border-top: u(1.5) solid var(--line);
 }
@@ -276,14 +197,11 @@
 
 // ---------- МВ ----------
 @include mobile {
-  .head { flex-direction: column; align-items: start; gap: u(16); }
-  .headSide { width: 100%; justify-content: space-between; }
-  .arrows { display: none; }
-  .rail { grid-auto-columns: u(290); column-gap: u(12); margin-top: u(24); padding-top: 0; padding-bottom: u(8); }
+  .three { grid-template-columns: minmax(0, 1fr); gap: u(16); margin-top: u(24); }
+  .allWrap { margin-top: u(28); .btn { width: 100%; } }
   .card { --r: #{u(22)}; }
   .cardBody { padding: u(16) u(16) u(20); gap: u(8); }
-  .allCard { min-height: u(300); padding: u(20); border-radius: u(22); b { font-size: u(24); } }
-  .feature { grid-template-columns: minmax(0, 1fr); gap: u(24); margin-top: u(32); padding-top: u(40); }
+  .feature { grid-template-columns: minmax(0, 1fr); gap: u(24); margin-top: u(56); padding-top: u(40); }
   .featurePhoto { order: -1; aspect-ratio: 4 / 3; border-radius: u(24); }
   .featureTitle { font-size: u(28); letter-spacing: u(-0.6); }
   .excerpt { max-height: u(180); p { font-size: u(15); } }
