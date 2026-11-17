@@ -1,0 +1,277 @@
+@use "styles/core" as *;
+
+.label { @include type-label; color: var(--accent); margin-bottom: u(20); }
+.h2 { @include type-h2; max-width: u(820); text-wrap: balance; }
+.h3 { @include type-h3; }
+.btn { @include btn(60); }
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: u(8);
+  font-weight: 600;
+  border-bottom: u(1.5) solid currentColor;
+  padding-bottom: u(3);
+  svg { transition: transform 0.3s var(--ease); }
+  @media (hover: hover) { &:hover svg { transform: translateX(u(4)); } }
+}
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: u(10); font-size: u(13); color: var(--muted); }
+.tagInline {
+  @include type-label;
+  font-size: u(11);
+  color: var(--accent);
+}
+
+// ---------- Блог на главной ----------
+.section {
+  @include container;
+  padding-top: u(150);
+  @include mobile { padding-top: u(90); }
+}
+.head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: u(24);
+}
+.headSide { display: flex; align-items: center; gap: u(28); flex: none; }
+.arrows {
+  display: flex;
+  gap: u(10);
+  button {
+    display: grid;
+    place-items: center;
+    width: u(52);
+    height: u(52);
+    border-radius: 50%;
+    border: u(1.5) solid var(--line);
+    color: var(--ink);
+    transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease), opacity 0.3s;
+    &:first-child svg { transform: scaleX(-1); }
+    &:disabled { opacity: 0.35; cursor: default; }
+    @media (hover: hover) { &:not(:disabled):hover { background: var(--ink); border-color: var(--ink); color: var(--cream); } }
+    &:focus-visible { outline: u(2) solid var(--ink); outline-offset: u(3); }
+  }
+}
+
+// лента выходит за поля до края экрана: видно, что её можно листать
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: u(360);
+  column-gap: u(24);
+  margin-top: u(48);
+  // поле до края экрана (scroll-padding в % считался бы от ширины ленты, поэтому — через переменную)
+  --bleed: calc(50vw - #{u($content * 0.5)});
+  @include mobile { --bleed: calc(50vw - #{u($m-content * 0.5)}); }
+  margin-inline: calc(var(--bleed) * -1);
+  padding-inline: var(--bleed);
+  scroll-padding-inline: var(--bleed);
+  padding-bottom: u(16);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+  > li { scroll-snap-align: start; }
+}
+
+// ---- карточка статьи ----
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: u(28);
+  overflow: hidden;
+  background: var(--cream);
+  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
+  &:focus-visible { outline: u(2) solid var(--ink); outline-offset: u(4); }
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(u(-6));
+      box-shadow: 0 u(24) u(50) color-mix(in srgb, var(--ink) 14%, transparent);
+      .cardPhoto img { transform: scale(1.05); }
+    }
+  }
+}
+.cardPhoto {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease); }
+}
+.tag {
+  position: absolute;
+  left: u(16);
+  top: u(16);
+  padding: u(8) u(12);
+  border-radius: u(100);
+  background: var(--cream);
+  @include type-label;
+  font-size: u(11);
+}
+.cardBody { display: grid; align-content: start; gap: u(10); padding: u(22) u(24) u(26); }
+.cardTitle { @include type-h3; text-wrap: balance; }
+.cardLead {
+  @include type-body;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+// широкая карточка (первая статья на странице блога): фото слева, текст справа
+.card[data-wide] {
+  @include desktop {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    .cardPhoto { aspect-ratio: auto; height: 100%; min-height: u(420); }
+    .cardBody { align-content: center; padding: u(48); gap: u(16); }
+    .cardTitle { @include type-h2; font-size: u(44); letter-spacing: u(-1); }
+    .cardLead { @include type-lead; color: var(--muted); -webkit-line-clamp: 4; }
+  }
+}
+
+// последняя карточка ленты — ссылка на все статьи
+.allCard {
+  display: grid;
+  align-content: space-between;
+  height: 100%;
+  min-height: u(360);
+  padding: u(28);
+  border-radius: u(28);
+  background: var(--ink);
+  color: var(--cream);
+  span { @include type-label; color: var(--accent); }
+  b { @include display; font-size: u(30); line-height: 1.1; letter-spacing: u(-0.5); font-weight: 600; }
+  i {
+    display: grid;
+    place-items: center;
+    width: u(56);
+    height: u(56);
+    border-radius: 50%;
+    background: var(--accent);
+    transition: transform 0.4s var(--ease);
+  }
+  @media (hover: hover) { &:hover i { transform: translateX(u(8)); } }
+  &:focus-visible { outline: u(2) solid var(--ink); outline-offset: u(4); }
+}
+
+// ---- статья на главной: текст слева, фото справа ----
+.feature {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: u(64);
+  align-items: center;
+  margin-top: u(80);
+  padding-top: u(80);
+  border-top: u(1.5) solid var(--line);
+}
+.featureText { display: grid; justify-items: start; gap: u(18); }
+.featureTitle { @include type-h2; font-size: u(48); letter-spacing: u(-1.2); text-wrap: balance; }
+.featureLead { @include type-lead; }
+// начало статьи растворяется снизу — приглашение дочитать
+.excerpt {
+  display: grid;
+  gap: u(14);
+  max-height: u(210);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(#000 45%, transparent);
+  mask-image: linear-gradient(#000 45%, transparent);
+  p { @include type-body; font-size: u(16); color: color-mix(in srgb, var(--ink) 80%, transparent); }
+}
+.featurePhoto {
+  display: block;
+  aspect-ratio: 4 / 5;
+  border-radius: u(36);
+  overflow: hidden;
+  img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+  @media (hover: hover) { &:hover img { transform: scale(1.04); } }
+}
+
+// ---------- Страница блога ----------
+.main { @include container; padding-top: u(56); }
+.h1 {
+  @include type-h1;
+  font-size: u(72);
+  max-width: u(1000);
+  text-wrap: balance;
+}
+.lead { @include type-lead; color: var(--muted); margin-top: u(18); max-width: u(640); }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: u(28) u(24);
+  margin-top: u(48);
+  // ряд из трёх, последний ряд из двух широких — без пустой ячейки
+  > li { grid-column: span 2; }
+  > li:nth-last-child(-n + 2) { grid-column: span 3; }
+  > .gridWide { grid-column: 1 / -1; }
+}
+
+// ---------- Статья ----------
+.articleHead { max-width: u(900); margin-inline: auto; display: grid; gap: u(18); .lead { margin-top: 0; } }
+.articlePhoto {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 8;
+  object-fit: cover;
+  border-radius: u(36);
+  margin-top: u(56);
+}
+.articleBody {
+  max-width: u(720);
+  margin: u(72) auto 0;
+  display: grid;
+  gap: u(40);
+  section { display: grid; gap: u(14); }
+  p { @include type-body; font-size: u(18); line-height: 1.7; color: color-mix(in srgb, var(--ink) 85%, transparent); }
+}
+.tip {
+  padding: u(32) u(36);
+  border-radius: u(28);
+  background: var(--ink);
+  color: var(--cream);
+  b { @include type-label; color: var(--accent); }
+  p { margin-top: u(12); @include display; font-size: u(24); line-height: 1.3; color: var(--cream) !important; }
+}
+.more { margin-top: u(110); }
+.moreGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: u(24); }
+.cta {
+  margin-top: u(110);
+  padding: u(64);
+  border-radius: u(36);
+  background: var(--cream);
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: u(16);
+  p { @include type-lead; color: var(--muted); max-width: u(560); }
+  .btn { margin-top: u(12); }
+}
+.ctaTitle { @include type-h2; max-width: u(720); text-wrap: balance; }
+
+// ---------- МВ ----------
+@include mobile {
+  .head { flex-direction: column; align-items: start; gap: u(16); }
+  .headSide { width: 100%; justify-content: space-between; }
+  .arrows { display: none; }
+  .rail { grid-auto-columns: u(290); column-gap: u(12); margin-top: u(24); }
+  .card { border-radius: u(22); }
+  .cardBody { padding: u(16) u(16) u(20); gap: u(8); }
+  .allCard { min-height: u(300); padding: u(20); border-radius: u(22); b { font-size: u(24); } }
+  .feature { grid-template-columns: minmax(0, 1fr); gap: u(24); margin-top: u(40); padding-top: u(40); }
+  .featurePhoto { order: -1; aspect-ratio: 4 / 3; border-radius: u(24); }
+  .featureTitle { font-size: u(28); letter-spacing: u(-0.6); }
+  .excerpt { max-height: u(180); p { font-size: u(15); } }
+  .featureText .btn { width: 100%; }
+  .main { padding-top: u(24); }
+  .h1 { font-size: u(36); }
+  .grid { grid-template-columns: minmax(0, 1fr); gap: u(16); margin-top: u(28); > li, > li:nth-last-child(-n + 2) { grid-column: auto; } }
+  .articlePhoto { aspect-ratio: 4 / 3; border-radius: u(24); margin-top: u(28); }
+  .articleBody { margin-top: u(36); gap: u(28); p { font-size: u(16); } }
+  .tip { padding: u(22) u(20); border-radius: u(22); p { font-size: u(19); } }
+  .more { margin-top: u(56); }
+  .moreGrid { grid-template-columns: minmax(0, 1fr); gap: u(16); }
+  .cta { margin-top: u(56); padding: u(32) u(16); border-radius: u(24); }
+}

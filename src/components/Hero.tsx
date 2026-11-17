@@ -206,6 +206,7 @@ export default function Hero() {
           <a href="#friends">Найти друга</a>
           <a href="#adopt">Как забрать</a>
           <a href="#help">Помочь</a>
+          <a href="#blog">Блог</a>
         </nav>
         <a href="#help" className={s.headerBtn}>
           Помочь приюту
