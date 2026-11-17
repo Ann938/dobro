@@ -16,7 +16,7 @@ export type Article = {
 
 export const blog = {
   label: "Блог",
-  title: "Полезно прочитать до и после переезда",
+  title: "Полезно почитать",
   all: "Все статьи",
   read: "Дочитать статью",
   page: {
