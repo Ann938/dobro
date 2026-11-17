@@ -28,6 +28,9 @@ export function BlogCard({ a, wide }: { a: Article; wide?: boolean }) {
         </span>
         <span className={s.cardTitle}>{a.title}</span>
         <span className={s.cardLead}>{a.lead}</span>
+        <span className={s.read}>
+          Читать статью <Arrow />
+        </span>
       </span>
     </a>
   );

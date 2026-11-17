@@ -59,16 +59,16 @@
   grid-auto-flow: column;
   grid-auto-columns: u(360);
   column-gap: u(24);
-  // сверху запас под лапку: лента прокручивается и обрезает всё, что выходит за её край
-  margin-top: u(8);
-  padding-top: u(40);
+  // запас сверху и снизу: лента прокручивается и обрезает подъём и тень карточки при наведении
+  margin-top: u(36);
+  padding-top: u(12);
   // поле до края экрана (scroll-padding в % считался бы от ширины ленты, поэтому — через переменную)
   --bleed: calc(50vw - #{u($content * 0.5)});
   @include mobile { --bleed: calc(50vw - #{u($m-content * 0.5)}); }
   margin-inline: calc(var(--bleed) * -1);
   padding-inline: var(--bleed);
   scroll-padding-inline: var(--bleed);
-  padding-bottom: u(16);
+  padding-bottom: u(48);
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
@@ -86,12 +86,17 @@
   flex-direction: column;
   height: 100%;
   border-radius: var(--r);
-  // фон карточки — слоем над лапкой, как у кнопок: лапка прячется за карточкой и выглядывает сверху
-  &::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: var(--cream); }
-  @include paw-logo(u(-40), calc(100% - #{u(104)}), u(60), translateY(u(40)), 12deg, -14deg);
+  background: var(--cream);
+  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
   &:focus-visible { outline: u(2) solid var(--ink); outline-offset: u(4); }
+  // наведение как у карточек историй: карточка приподнимается, фото чуть приближается, стрелка «Читать статью» уходит вправо
   @media (hover: hover) {
-    &:hover .cardPhoto img { transform: scale(1.04); }
+    &:hover {
+      transform: translateY(u(-6));
+      box-shadow: 0 u(24) u(50) color-mix(in srgb, var(--ink) 14%, transparent);
+      .cardPhoto img { transform: scale(1.05); }
+      .read svg { transform: translateX(u(4)); }
+    }
   }
 }
 .cardPhoto {
@@ -112,8 +117,21 @@
   @include type-label;
   font-size: u(11);
 }
-.cardBody { display: grid; align-content: start; gap: u(10); padding: u(22) u(24) u(26); }
+// «Читать статью» прижата к низу — в ленте и сетке ссылки стоят на одной линии
+.cardBody { flex: 1; display: grid; grid-template-rows: auto auto auto 1fr; gap: u(10); padding: u(22) u(24) u(26); }
 .cardTitle { @include type-h3; text-wrap: balance; }
+.read {
+  display: inline-flex;
+  align-items: center;
+  gap: u(8);
+  margin-top: u(6);
+  align-self: end;
+  justify-self: start;
+  font-weight: 700;
+  font-size: u(15);
+  color: var(--accent);
+  svg { transition: transform 0.35s var(--ease); }
+}
 .cardLead {
   @include type-body;
   color: var(--muted);
@@ -128,7 +146,8 @@
     display: grid;
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
     .cardPhoto { aspect-ratio: auto; height: 100%; min-height: u(420); border-radius: var(--r) 0 0 var(--r); }
-    .cardBody { align-content: center; padding: u(48); gap: u(16); }
+    .cardBody { grid-template-rows: none; align-content: center; padding: u(48); gap: u(16); }
+    .read { align-self: start; margin-top: u(8); }
     .cardTitle { @include type-h2; font-size: u(44); letter-spacing: u(-1); }
     .cardLead { @include type-lead; color: var(--muted); -webkit-line-clamp: 4; }
   }
@@ -145,8 +164,7 @@
   padding: u(28);
   border-radius: u(28);
   color: var(--cream);
-  &::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: var(--ink); }
-  @include paw-logo(u(-40), calc(100% - #{u(104)}), u(60), translateY(u(40)), 12deg, -14deg);
+  background: var(--ink);
   span { @include type-label; color: var(--accent); }
   b { @include display; font-size: u(30); line-height: 1.1; letter-spacing: u(-0.5); font-weight: 600; }
   i {
@@ -168,7 +186,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: u(64);
   align-items: center;
-  margin-top: u(80);
+  margin-top: u(48);
   padding-top: u(80);
   border-top: u(1.5) solid var(--line);
 }
@@ -215,7 +233,7 @@
 }
 
 // ---------- Статья ----------
-.articleHead { max-width: u(900); margin-inline: auto; display: grid; gap: u(18); .lead { margin-top: 0; } }
+.articleHead { max-width: u(900); display: grid; gap: u(18); .lead { margin-top: 0; } }
 .articlePhoto {
   display: block;
   width: 100%;
@@ -225,8 +243,8 @@
   margin-top: u(56);
 }
 .articleBody {
-  max-width: u(720);
-  margin: u(72) auto 0;
+  max-width: u(760);
+  margin-top: u(72);
   display: grid;
   gap: u(40);
   section { display: grid; gap: u(14); }
@@ -261,11 +279,11 @@
   .head { flex-direction: column; align-items: start; gap: u(16); }
   .headSide { width: 100%; justify-content: space-between; }
   .arrows { display: none; }
-  .rail { grid-auto-columns: u(290); column-gap: u(12); margin-top: u(24); padding-top: 0; }
+  .rail { grid-auto-columns: u(290); column-gap: u(12); margin-top: u(24); padding-top: 0; padding-bottom: u(8); }
   .card { --r: #{u(22)}; }
   .cardBody { padding: u(16) u(16) u(20); gap: u(8); }
   .allCard { min-height: u(300); padding: u(20); border-radius: u(22); b { font-size: u(24); } }
-  .feature { grid-template-columns: minmax(0, 1fr); gap: u(24); margin-top: u(40); padding-top: u(40); }
+  .feature { grid-template-columns: minmax(0, 1fr); gap: u(24); margin-top: u(32); padding-top: u(40); }
   .featurePhoto { order: -1; aspect-ratio: 4 / 3; border-radius: u(24); }
   .featureTitle { font-size: u(28); letter-spacing: u(-0.6); }
   .excerpt { max-height: u(180); p { font-size: u(15); } }
